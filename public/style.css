@@ -22,3 +22,8 @@ body{background:#fff}.head{height:90px}.site-logo{width:155px;height:auto;max-he
 
 /* ADM: simple two-card landing and separate motorcycle cards */
 .admin-home{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:720px;margin:35px auto}.admin-home-card{background:#fff;border:1px solid #e6e6e6;border-radius:18px;padding:32px 20px;box-shadow:0 8px 22px #00000012;display:flex;flex-direction:column;align-items:center;gap:15px;font-size:19px;color:#222}.admin-home-icon{font-size:42px}.admin-home-arrow{color:#999;font-size:24px}.admin-back{margin-bottom:14px}.admin-bike-card{background:#fff;border:1px solid #e6e6e6;border-radius:14px;padding:14px;margin:13px 0;box-shadow:0 4px 14px #0000000c}.admin-bike-info{display:flex;align-items:center;gap:12px;min-width:0}.admin-bike-thumb{width:75px;height:70px;flex:none;border-radius:9px;background:#f2f2f2;display:grid;place-items:center;overflow:hidden;font-size:28px}.admin-bike-thumb img{width:100%;height:100%;object-fit:contain}.admin-bike-actions{display:flex;flex-wrap:wrap;justify-content:flex-end}@media(max-width:540px){.admin-home{grid-template-columns:1fr;gap:15px;margin:18px auto}.admin-home-card{padding:24px}.admin-bike-card .itemhead{align-items:flex-start;flex-direction:column}.admin-bike-actions{width:100%}}
+
+/* V06: ajustes aprovados */
+.site-logo{width:110px;max-height:48px;object-fit:contain;object-position:left center}
+@media(max-width:540px){.site-logo{width:100px;max-height:42px}}
+.adminbar-title{display:flex;align-items:center;gap:12px;min-width:0}.admin-public-back{font-size:14px;padding:8px 9px;white-space:nowrap}.done-grey{background:#e8e8e8!important;color:#222!important;border:0!important;font-weight:700}.admin-detail-actions{margin-top:18px}
