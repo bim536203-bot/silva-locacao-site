@@ -63,3 +63,9 @@ body:has(#admin:not(.hidden)) .floating-admin-lock,body:has(#customer:not(.hidde
 .relative-card .field{margin:0 0 14px}.relative-card label{font-size:14px}
 .relative-card input,.relative-card select{width:100%;min-width:0;max-width:100%;font-size:15px;padding:11px;border:1px solid #ddd;border-radius:9px;background:white}
 @media(max-width:540px){.form-gallery{grid-template-columns:48px minmax(0,1fr) 48px!important;gap:2px!important}.gallery-arrow{width:46px!important;height:46px!important;font-size:38px!important}.form-bike-title{margin-bottom:112px!important}.relatives-section{padding:12px 8px}.relatives-grid{gap:6px}.relative-card{padding:9px}.relative-card h4{font-size:13px}.relative-card label{font-size:12px}.relative-card input,.relative-card select{font-size:13px;padding:9px 6px}}
+
+/* Avisos persistentes centralizados */
+#toast.toast{position:fixed;top:50%;left:50%;right:auto;bottom:auto;transform:translate(-50%,-50%);box-sizing:border-box;width:min(420px,calc(100vw - 40px));max-width:calc(100vw - 40px);max-height:80dvh;overflow:auto;z-index:10000;padding:44px 24px 24px;border-radius:18px;text-align:center;background:#222;color:#fff;box-shadow:0 8px 35px #0004;font-size:18px;line-height:1.5}
+#toast.toast p{margin:0;overflow-wrap:anywhere}
+#toast .toast-close{position:absolute;top:8px;right:8px;width:36px;height:36px;border:0;background:transparent;color:#fff;font-size:30px;line-height:1;cursor:pointer}
+#toast.hidden{display:none!important}

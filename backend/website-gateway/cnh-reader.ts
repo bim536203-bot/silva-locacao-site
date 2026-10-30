@@ -1,7 +1,7 @@
 import { getDocumentProxy } from 'npm:unpdf@0.12.1';
 import { checkCnhItems, VerificationError } from './validation.js';
 
-export async function verifyCnh(bytes:Uint8Array,name:string,cpf:string){
+export async function verifyCnh(bytes:Uint8Array,name:string,cpf:string,birthDate:string){
   let pdf:any;
   try {
     pdf=await getDocumentProxy(new Uint8Array(bytes),{isEvalSupported:false,disableFontFace:true,useSystemFonts:false,disableAutoFetch:true,disableStream:true});
@@ -12,7 +12,7 @@ export async function verifyCnh(bytes:Uint8Array,name:string,cpf:string){
       if(content.items.length>15000)throw new VerificationError('Não foi possível conferir este PDF. Envie o PDF digital original da CNH.');
       pages.push(content.items);
     }
-    return checkCnhItems(pages,name,cpf);
+    return checkCnhItems(pages,name,cpf,birthDate);
   }catch(error){
     if(error instanceof VerificationError)throw error;
     throw new VerificationError('Não foi possível ler a CNH. Envie o PDF digital original, legível e sem senha.');

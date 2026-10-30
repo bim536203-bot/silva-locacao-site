@@ -10,8 +10,8 @@ export function normalizePhone(value) {
 }
 export function checkContacts(data) {
   const customer=normalizePhone(data.phone),first=normalizePhone(data.relative_1_phone),second=normalizePhone(data.relative_2_phone);
-  if(first&&first===customer)throw new VerificationError('O telefone do 1º parente deve ser diferente do telefone do cliente.','relative_1_phone');
-  if(second&&second===customer)throw new VerificationError('O telefone do 2º parente deve ser diferente do telefone do cliente.','relative_2_phone');
+  if(first&&first===customer)throw new VerificationError('Não é possível concluir o envio. Seu telefone é o mesmo número de seu parente.','relative_1_phone');
+  if(second&&second===customer)throw new VerificationError('Não é possível concluir o envio. Seu telefone é o mesmo número de seu parente.','relative_2_phone');
   if(first&&first===second)throw new VerificationError('Informe um telefone diferente para o 2º parente. Este contato já foi usado no 1º parente.','relative_2_phone');
 }
 function validCpf(value) {
@@ -21,14 +21,19 @@ function validCpf(value) {
 const cpfPattern=/\b\d{3}\s*\.?\s*\d{3}\s*\.?\s*\d{3}\s*[-.]?\s*\d{2}\b/g;
 function cpfs(text){return (text.match(cpfPattern)||[]).map(digits).filter(validCpf);}
 function rows(items){const result=[];for(const item of items){let row=result.find(r=>Math.abs(r.y-item.y)<3);if(!row){row={y:item.y,items:[]};result.push(row);}row.items.push(item);}return result.sort((a,b)=>b.y-a.y).map(r=>({...r,text:r.items.sort((a,b)=>a.x-b.x).map(i=>i.text).join(' ')}));}
-export function checkCnhItems(pages,fullName,cpf) {
-  const names=new Set(),documentCpfs=new Set();let hasCnh=false;
+export function checkCnhItems(pages,fullName,cpf,birthDate) {
+  const names=new Set(),documentCpfs=new Set(),birthDates=new Set();let hasCnh=false;
   for(const page of pages){
     const items=page.filter(i=>typeof i.str==='string'&&i.str.trim()&&i.transform).map(i=>({text:i.str.trim(),x:i.transform[4],y:i.transform[5],width:i.width||0}));
     const all=normalizeName(items.map(i=>i.text).join(' '));
     if(/CARTEIRA NACIONAL DE HABILITACAO|PERMISSAO PARA DIRIGIR|DRIVER LICENSE/.test(all))hasCnh=true;
     for(const label of items){
       const text=normalizeName(label.text);
+      if(/NASCIMENTO|DATE OF BIRTH/.test(text)){
+        const nearby=items.filter(i=>i!==label&&i.x>=label.x-10&&i.x<=label.x+260&&i.y<=label.y+3&&i.y>=label.y-55);
+        const sources=[label.text,...rows(nearby).map(r=>r.text)];
+        for(const source of sources){const match=source.match(/\b(\d{2})[\/.-](\d{2})[\/.-](\d{4})\b/);if(match){const iso=match[3]+'-'+match[2]+'-'+match[1];const date=new Date(iso+'T12:00:00Z');if(!isNaN(+date)&&date.toISOString().slice(0,10)===iso)birthDates.add(iso);break;}}
+      }
       if(/\bCPF\b/.test(text)){
         const own=cpfs(label.text);const nearby=items.filter(i=>i!==label&&i.x>=label.x-10&&i.x<=label.x+220&&i.y<=label.y+3&&i.y>=label.y-55);
         const found=own.length?own:cpfs(rows(nearby).map(r=>r.text).join(' '));found.forEach(c=>documentCpfs.add(c));
@@ -41,8 +46,9 @@ export function checkCnhItems(pages,fullName,cpf) {
       if(candidates.length)names.add(normalizeName(candidates[0].text));
     }
   }
-  if(!hasCnh||names.size!==1||documentCpfs.size!==1)throw new VerificationError('Não foi possível ler com segurança o nome e o CPF da CNH. Envie o PDF digital original, legível e sem senha.');
-  if(!documentCpfs.has(digits(cpf)))throw new VerificationError('O CPF informado não corresponde ao CPF do titular da CNH. Confira o CPF ou envie o documento correto.','cpf');
-  if(!names.has(normalizeName(fullName)))throw new VerificationError('O nome informado não corresponde ao nome do titular da CNH. Digite o nome completo como está no documento.','full_name');
+  if(!hasCnh||names.size!==1||documentCpfs.size!==1||birthDates.size!==1)throw new VerificationError('Não foi possível ler com segurança o nome, o CPF e a data de nascimento da CNH. Envie o PDF digital original, legível e sem senha.');
+  if(!documentCpfs.has(digits(cpf)))throw new VerificationError('Os seus dados preenchidos não estão de acordo com os dados da CNH enviada.','cpf');
+  if(!names.has(normalizeName(fullName)))throw new VerificationError('Os seus dados preenchidos não estão de acordo com os dados da CNH enviada.','full_name');
+  if(!birthDates.has(birthDate))throw new VerificationError('Os seus dados preenchidos não estão de acordo com os dados da CNH enviada.','birth_date');
   return {matched:true};
 }

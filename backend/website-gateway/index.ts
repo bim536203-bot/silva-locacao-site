@@ -49,9 +49,9 @@ Deno.serve(async req=>{
  assert(!isNaN(+birth)&&birth.toISOString().slice(0,10)===data.birth_date&&age>=18&&age<=120,'É necessário ter pelo menos 18 anos.');
  assert(form.get('privacy')==='true'&&form.get('requirements')==='true','Confirme os requisitos e o aviso de privacidade.');
  const previous=await db.from('website_applications').select('id').eq('id',id).maybeSingle();if(previous.data)return result({id});
- await limit('submit:global',60,3600);await limit('submit:cpf:'+await digest(data.cpf),5,3600);
+ await limit('submit:burst:global',120,60);
  const bike=await db.from('website_motorcycles').select('id').eq('id',data.motorcycle_id).eq('available',true).maybeSingle();assert(bike.data,'Moto indisponível.');
- const cnh=await checkedFile(form.get('cnh'),'cnh'),face=await checkedFile(form.get('face'),'face');await verifyCnh(cnh.bytes,data.full_name,data.cpf);const paths=[`${id}/cnh.pdf`,`${id}/face.${face.ext}`];
+ const cnh=await checkedFile(form.get('cnh'),'cnh'),face=await checkedFile(form.get('face'),'face');await verifyCnh(cnh.bytes,data.full_name,data.cpf,data.birth_date);const paths=[`${id}/cnh.pdf`,`${id}/face.${face.ext}`];
  const reserve=await db.rpc('website_upload_session',{p_id:id,p_paths:paths});assert(!reserve.error,'Este envio já está sendo processado. Atualize e tente novamente.');
  const docs=[];let complete=false;
  try{
