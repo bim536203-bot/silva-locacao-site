@@ -1,0 +1,16 @@
+CADASTRO V10 - atualização dos contatos de parentes
+
+IMPLEMENTADO NESTE ZIP:
+- Botão WhatsApp ao lado de cada contato de parente na visualização ADM.
+- Mensagem individual gerada dos dados persistidos do cadastro (nome do parente, parentesco e nome do cliente).
+- Link wa.me com mensagem pronta, sem envio automático.
+- Linguagem neutra sobre o cliente, porque o formulário não informa gênero; concordância do parentesco usa o campo selecionado.
+- Alterações de nome ou parentesco salvas no cadastro serão refletidas ao abrir a mensagem novamente.
+
+PENDENTE NO SERVIDOR SUPABASE (NÃO INCLUSO NO ZIP):
+- A função Edge website-gateway?action=submit faz a verificação da CNH e precisa de atualização para documentos com dados pessoais em imagem. O frontend não pode substituir validação segura no servidor.
+- Implementar extração visual confiável, distinguir leitura inconclusiva de divergência comprovada e encaminhar documentos inconclusivos para revisão administrativa.
+- Verificar se o backend atual aceita e persiste os seis campos relative_1_* e relative_2_*; o frontend já os envia, mas o código do servidor não acompanha este ZIP.
+- Testar envio real, permissões da ADM e abertura do WhatsApp no Android/iPhone.
+
+ATENÇÃO: sem as atualizações do servidor, a correção da CNH não está concluída. Não substitua a versão em produção antes de testar.
