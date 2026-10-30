@@ -1,3 +1,5 @@
+import { verifyCnh } from './cnh-reader.ts';
+import { checkContacts, VerificationError } from './validation.js';
 import { createClient } from 'npm:@supabase/supabase-js@2.95.3';
 const url=Deno.env.get('SUPABASE_URL')!, secret=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const db=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -28,17 +30,18 @@ Deno.serve(async req=>{
  const sigBytes=Uint8Array.from(sig.match(/../g)!,x=>parseInt(x,16));
  assert(await crypto.subtle.verify('HMAC',hkey,sigBytes,encoder.encode(`${id}:${expires}`)),'Verificação inválida.');
  assert((await digest(`${id}:${expires}:${proof}`)).startsWith('0000'),'Verificação inválida.');
- const data={motorcycle_id:String(form.get('motorcycle_id')||''),full_name:String(form.get('full_name')||'').trim(),cpf:String(form.get('cpf')||'').replace(/\D/g,''),phone:String(form.get('phone')||'').replace(/\D/g,''),birth_date:String(form.get('birth_date')||'')};
+ const data={motorcycle_id:String(form.get('motorcycle_id')||''),full_name:String(form.get('full_name')||'').trim(),cpf:String(form.get('cpf')||'').replace(/\D/g,''),phone:String(form.get('phone')||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,''),birth_date:String(form.get('birth_date')||'')};
  const extraKeys=['email','relative_1_name','relative_1_phone','relative_1_relation','relative_2_name','relative_2_phone','relative_2_relation'] as const;
  if(extraKeys.some(key=>form.has(key))){
  const extras=Object.fromEntries(extraKeys.map(key=>[key,String(form.get(key)||'').trim()]));
  assert(extras.email.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(extras.email),'Informe um e-mail válido.');
  for(const n of [1,2]){
- const name=extras[`relative_${n}_name`],phone=extras[`relative_${n}_phone`].replace(/\D/g,''),relation=extras[`relative_${n}_relation`];
+ const name=extras[`relative_${n}_name`],phone=extras[`relative_${n}_phone`].replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,''),relation=extras[`relative_${n}_relation`];
  assert(name.length>=2&&name.length<=150&&/^\d{10,11}$/.test(phone)&&['Pai','Mãe','Irmão','Irmã','Avô','Avó','Tio','Tia','Filho','Filha','Primo','Prima','Outro'].includes(relation),'Confira os contatos dos parentes.');
  extras[`relative_${n}_phone`]=phone;
  }
  Object.assign(data,extras);
+ checkContacts({...data,...extras});
  }
  assert(data.full_name.length>=5&&data.full_name.length<=150&&data.full_name.split(/\s+/).length>=2&&cpfValid(data.cpf)&&/^\d{10,11}$/.test(data.phone),'Confira nome, CPF e telefone.');
  assert(/^\d{4}-\d{2}-\d{2}$/.test(data.birth_date),'Nascimento inválido.');
@@ -48,7 +51,7 @@ Deno.serve(async req=>{
  const previous=await db.from('website_applications').select('id').eq('id',id).maybeSingle();if(previous.data)return result({id});
  await limit('submit:global',60,3600);await limit('submit:cpf:'+await digest(data.cpf),5,3600);
  const bike=await db.from('website_motorcycles').select('id').eq('id',data.motorcycle_id).eq('available',true).maybeSingle();assert(bike.data,'Moto indisponível.');
- const cnh=await checkedFile(form.get('cnh'),'cnh'),face=await checkedFile(form.get('face'),'face');const paths=[`${id}/cnh.pdf`,`${id}/face.${face.ext}`];
+ const cnh=await checkedFile(form.get('cnh'),'cnh'),face=await checkedFile(form.get('face'),'face');await verifyCnh(cnh.bytes,data.full_name,data.cpf);const paths=[`${id}/cnh.pdf`,`${id}/face.${face.ext}`];
  const reserve=await db.rpc('website_upload_session',{p_id:id,p_paths:paths});assert(!reserve.error,'Este envio já está sendo processado. Atualize e tente novamente.');
  const docs=[];let complete=false;
  try{
@@ -73,5 +76,6 @@ Deno.serve(async req=>{
  const archived=await db.from('website_applications').update({archived_at:new Date().toISOString()}).lt('deleted_at',new Date(Date.now()-7*86400000).toISOString()).is('archived_at',null);assert(!archived.error,'Arquivamento indisponível.');return result({ok:true});
  }
  return result({error:'Ação inválida'},404);
- }catch(e){return result({error:e instanceof Error?e.message:'Não foi possível concluir a operação.'},400)}
+ }catch(e){return result({error:e instanceof Error?e.message:'Não foi possível concluir a operação.',field:e instanceof VerificationError?e.field:undefined},400)}
 });
+
