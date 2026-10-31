@@ -29,7 +29,7 @@ export function checkCnhItems(pages,fullName,cpf,birthDate) {
     if(/CARTEIRA NACIONAL DE HABILITACAO|PERMISSAO PARA DIRIGIR|DRIVER LICENSE/.test(all))hasCnh=true;
     for(const label of items){
       const text=normalizeName(label.text);
-      if(/NASCIMENTO|DATE OF BIRTH/.test(text)){
+      if(/\bDATA\b.*\bNASCIMENTO\b|DATE OF BIRTH|^NASCIMENTO$/.test(text)){
         const nearby=items.filter(i=>i!==label&&i.x>=label.x-10&&i.x<=label.x+260&&i.y<=label.y+3&&i.y>=label.y-55);
         const sources=[label.text,...rows(nearby).map(r=>r.text)];
         for(const source of sources){const match=source.match(/\b(\d{2})[\/.-](\d{2})[\/.-](\d{4})\b/);if(match){const iso=match[3]+'-'+match[2]+'-'+match[1];const date=new Date(iso+'T12:00:00Z');if(!isNaN(+date)&&date.toISOString().slice(0,10)===iso)birthDates.add(iso);break;}}
@@ -42,7 +42,7 @@ export function checkCnhItems(pages,fullName,cpf,birthDate) {
       const inline=label.text.replace(/\/.*$/,'').replace(/^.*?(?:NOME(?:\s+E\s+SOBRENOME)?|NAME AND SURNAME)\s*[:\-]?\s*/i,'');
       if(normalizeName(inline).split(' ').length>=2&&normalizeName(inline)!==text){names.add(normalizeName(inline));continue;}
       const nearby=items.filter(i=>i!==label&&i.x>=label.x-10&&i.x<=label.x+350&&i.y<=label.y+3&&i.y>=label.y-50);
-      const candidates=rows(nearby).filter(r=>!/[0-9]/.test(r.text)&&normalizeName(r.text).split(' ').length>=2&&!/NASCIMENTO|FILIACAO|NACIONALIDADE|HABILITACAO|SOBRENOME/.test(normalizeName(r.text)));
+      const candidates=rows(nearby).filter(r=>!/[0-9]/.test(r.text)&&normalizeName(r.text).split(' ').length>=2&&!/^(?:DATA(?: DE)? NASCIMENTO|DATA LOCAL E UF DE NASCIMENTO|DATE OF BIRTH|NASCIMENTO|FILIACAO|NACIONALIDADE|HABILITACAO|SOBRENOME|DOC(?:UMENTO)?\b.*|IDENTIDADE\b.*|CPF|VALIDADE|PERMISSAO|CAT HAB|CATEGORIA)$/.test(normalizeName(r.text)));
       if(candidates.length)names.add(normalizeName(candidates[0].text));
     }
   }

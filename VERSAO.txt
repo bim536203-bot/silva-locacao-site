@@ -1,8 +1,9 @@
-CADASTRO — VERSÃO 17
-Preserva correções da galeria, botões e parentescos.
-Janela centralizada Carregando… durante o envio, incluindo envio pelo formulário com Enter.
-Conferência antecipada da CNH após escolher PDF e preencher nome, CPF e nascimento.
-Comprovante HMAC temporário vinculado ao PDF e aos dados evita repetir OCR no envio; alterações exigem nova conferência.
-Nenhum cadastro ou documento é armazenado antecipadamente pelo site. Rascunhos apenas em memória.
-Uploads da CNH e da foto em paralelo após validação. Bloqueio de envio duplicado.
-Testes automatizados de interface, validação do comprovante e fluxo do gateway com serviços simulados aprovados. Teste físico iPhone/Android não realizado.
+CADASTRO — VERSÃO 18
+Preserva funcionalidades da V17 e links existentes.
+Leitura da CNH combina extração textual, imagem nativa e página do mesmo documento quando os campos são complementares.
+Corrige seleção de nome: sobrenomes com NASCIMENTO não são descartados como rótulos; rótulos de identidade não são usados como nome.
+Datas de nascimento identificadas pelo rótulo do campo, sem confundir sobrenomes.
+Falha inconclusiva da conferência antecipada permite nova tentativa no envio final.
+Verificação real de leitura dos dois PDFs fornecidos: correspondência confirmada em ambos, sem criar cadastros ou armazenar documentos.
+Testes de regressão sintéticos: divergências de CPF, nome e nascimento; campos conflitantes; formato já legível; leituras complementares.
+Nenhum PDF de cliente ou dado pessoal incluído neste repositório.

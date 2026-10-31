@@ -102,7 +102,7 @@ async function submitApplication(e){
   const preparation=cnhPreparation&&snap?.file===cnhPreparation.file&&snap.stamp===cnhPreparation.stamp&&(!cnhPreparation.receipt||cnhPreparation.receipt.expires>Date.now()+10000)?cnhPreparation:null;
   const challengePromise=gateway('challenge',{}).then(async challenge=>({challenge,proof:await solveProof(challenge)}));
   const [{challenge,proof}]=await Promise.all([challengePromise,preparation?.promise]);
-  if(preparation?.error?.field)throw preparation.error;
+  if(preparation?.error?.field&&preparation.error.field!=='cnh')throw preparation.error;
   const form=new FormData();Object.entries({...data,cpf,phone,motorcycle_id:selectedBike.id,challenge_id:challenge.id,challenge_expires:challenge.expires,challenge_signature:challenge.signature,proof,privacy:'true',requirements:'true'}).forEach(([key,value])=>form.append(key,value));
   const current=cnhSnapshot();
   if(preparation?.receipt&&current?.file===preparation.file&&current.stamp===preparation.stamp)form.append('cnh_receipt',JSON.stringify(preparation.receipt));

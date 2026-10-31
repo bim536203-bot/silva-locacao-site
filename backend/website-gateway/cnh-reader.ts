@@ -71,13 +71,15 @@ export async function verifyCnh(bytes:Uint8Array,name:string,cpf:string,birthDat
   // CDT puts the original card images inside an A4 page. Read those JPEGs
   // at native resolution, avoiding the QR code and the small print on that page.
   const candidates=await nativeCardImages(bytes);
+  const views=[...pages];
   for(const candidate of candidates){
     const imagePages=await readImagePdf(candidate,1,'image/jpeg');
-    try{return checkCnhItems(imagePages,name,cpf,birthDate);}
+    views.push(...imagePages);
+    try{return checkCnhItems(views,name,cpf,birthDate);}
     catch(error){if(!(error instanceof VerificationError)||error.field!=='cnh')throw error;}
   }
   const imagePages=await readImagePdf(bytes,pageCount);
-  return checkCnhItems(imagePages,name,cpf,birthDate);
+  return checkCnhItems([...views,...imagePages],name,cpf,birthDate);
 }
 
 export async function nativeCardImages(bytes:Uint8Array):Promise<Uint8Array[]>{
