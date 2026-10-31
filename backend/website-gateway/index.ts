@@ -1,3 +1,4 @@
+import { issueReceipt, validReceipt } from './cnh-receipt.js';
 import { pushAction, dispatchPush } from './push.ts';
 import { verifyCnh } from './cnh-reader.ts';
 import { checkContacts, VerificationError } from './validation.js';
@@ -24,7 +25,7 @@ Deno.serve(async req=>{
  if(action==='challenge'){
  await limit('challenge:global',200,60);const id=crypto.randomUUID(),expires=Date.now()+300000;const text=`${id}:${expires}`;return result({id,expires,signature:await signed(text),difficulty:4});
  }
- if(action==='submit'){
+ if(action==='submit'||action==='precheck_cnh'){
  assert(Number(req.headers.get('content-length')||0)<=11000000,'Arquivos muito grandes.');
  const chunks:Uint8Array[]=[];let length=0;const reader=req.body?.getReader();assert(reader,'Envio vazio.');while(true){const next=await reader!.read();if(next.done)break;length+=next.value.length;if(length>11000000){await reader!.cancel();throw new Error('Arquivos muito grandes.')}chunks.push(next.value)}const form=await new Response(new Blob(chunks),{headers:{'Content-Type':req.headers.get('content-type')||''}}).formData();const id=String(form.get('challenge_id')||''),expires=Number(form.get('challenge_expires')),sig=String(form.get('challenge_signature')||''),proof=String(form.get('proof')||'');
  assert(/^[a-f0-9-]{36}$/.test(id)&&expires>Date.now()&&expires<Date.now()+301000&&/^[a-f0-9]{64}$/.test(sig)&&/^\d{1,10}$/.test(proof),'Verificação expirada. Tente novamente.');
@@ -32,6 +33,15 @@ Deno.serve(async req=>{
  assert(await crypto.subtle.verify('HMAC',hkey,sigBytes,encoder.encode(`${id}:${expires}`)),'Verificação inválida.');
  assert((await digest(`${id}:${expires}:${proof}`)).startsWith('0000'),'Verificação inválida.');
  const data={motorcycle_id:String(form.get('motorcycle_id')||''),full_name:String(form.get('full_name')||'').trim(),cpf:String(form.get('cpf')||'').replace(/\D/g,''),phone:String(form.get('phone')||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,''),birth_date:String(form.get('birth_date')||'')};
+ if(action==='precheck_cnh'){
+ assert(data.full_name.length>=5&&data.full_name.length<=150&&data.full_name.split(/\s+/).length>=2&&cpfValid(data.cpf),'Confira nome e CPF.');
+ const birth=new Date(data.birth_date+'T12:00:00');
+ assert(/^\d{4}-\d{2}-\d{2}$/.test(data.birth_date)&&!isNaN(+birth)&&birth.toISOString().slice(0,10)===data.birth_date,'Nascimento inválido.');
+ await limit('precheck:global',60,60);
+ const cnh=await checkedFile(form.get('cnh'),'cnh');
+ await verifyCnh(cnh.bytes,data.full_name,data.cpf,data.birth_date);
+ return result({receipt:await issueReceipt(secret,cnh.bytes,data)});
+ }
  const extraKeys=['email','relative_1_name','relative_1_phone','relative_1_relation','relative_2_name','relative_2_phone','relative_2_relation'] as const;
  if(extraKeys.some(key=>form.has(key))){
  const extras=Object.fromEntries(extraKeys.map(key=>[key,String(form.get(key)||'').trim()]));
@@ -54,11 +64,15 @@ Deno.serve(async req=>{
  const previous=await db.from('website_applications').select('id').eq('id',id).maybeSingle();if(previous.data)return result({id});
  await limit('submit:burst:global',120,60);
  const bike=await db.from('website_motorcycles').select('id').eq('id',data.motorcycle_id).eq('available',true).maybeSingle();assert(bike.data,'Moto indisponível.');
- const cnh=await checkedFile(form.get('cnh'),'cnh'),face=await checkedFile(form.get('face'),'face');await verifyCnh(cnh.bytes,data.full_name,data.cpf,data.birth_date);const paths=[`${id}/cnh.pdf`,`${id}/face.${face.ext}`];
+ const cnh=await checkedFile(form.get('cnh'),'cnh'),face=await checkedFile(form.get('face'),'face');let receipt;try{receipt=JSON.parse(String(form.get('cnh_receipt')||'null'))}catch{}
+ if(!await validReceipt(secret,cnh.bytes,data,receipt))await verifyCnh(cnh.bytes,data.full_name,data.cpf,data.birth_date);const paths=[`${id}/cnh.pdf`,`${id}/face.${face.ext}`];
  const reserve=await db.rpc('website_upload_session',{p_id:id,p_paths:paths});assert(!reserve.error,'Este envio já está sendo processado. Atualize e tente novamente.');
  const docs=[];let complete=false;
  try{
- for(const [i,kind,f] of [[0,'cnh',cnh],[1,'face',face]] as const){const r=await db.storage.from('website-application-documents').upload(paths[i],f.bytes,{contentType:f.mime,upsert:false});assert(!r.error,'Falha ao armazenar documentos. Tente novamente.');docs.push({kind,path:paths[i],mime_type:f.mime,size_bytes:f.size});}
+ const files=[[0,'cnh',cnh],[1,'face',face]] as const;
+ const uploads=await Promise.allSettled(files.map(([i,,f])=>db.storage.from('website-application-documents').upload(paths[i],f.bytes,{contentType:f.mime,upsert:false})));
+ assert(uploads.every(r=>r.status==='fulfilled'&&!r.value.error),'Falha ao armazenar documentos. Tente novamente.');
+ for(const [i,kind,f] of files)docs.push({kind,path:paths[i],mime_type:f.mime,size_bytes:f.size});
  const r=await db.rpc('website_finalize',{p_id:id,p_data:data,p_docs:docs});assert(!r.error,'Não foi possível concluir o cadastro. Tente novamente.');complete=true;const sending=dispatchPush(db).catch(()=>console.warn('website_push_dispatch_failed'));const runtime=(globalThis as any).EdgeRuntime;if(runtime?.waitUntil)runtime.waitUntil(sending);else await sending;return result({id:r.data});
  }finally{if(!complete)await db.storage.from('website-application-documents').remove(paths);}
  }
