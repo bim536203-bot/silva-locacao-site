@@ -5,12 +5,14 @@ let preloadedPhotos=new Map();let bikes=[],settings={},session=null,adminTimer=n
 const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}), date=s=>s?new Date(s).toLocaleString('pt-BR',{timeZone:'America/Boa_Vista'}):'—';
 
 // Feedback applies to existing and dynamically created buttons without changing their actions.
-document.addEventListener('click',event=>{
+function buttonFeedback(event){
  const button=event.target?.closest?.('button,input[type="button"],input[type="submit"],a.btn,a.mini,[role="button"]');
  if(!button||button.disabled||button.getAttribute('aria-disabled')==='true')return;
  button.classList.remove('click-feedback');void button.offsetWidth;button.classList.add('click-feedback');
  setTimeout(()=>button.classList.remove('click-feedback'),260);
-},true);
+}
+document.addEventListener('pointerdown',buttonFeedback,true);
+document.addEventListener('click',buttonFeedback,true);
 
 function buzz(){try{if(typeof navigator.vibrate==='function')navigator.vibrate(70)}catch{}}
 function navPush(page){try{history.pushState({cadastroPage:page},'',location.href)}catch{}}
@@ -38,7 +40,7 @@ function rememberForm(){const form=document.getElementById('application-form');i
 function openForm(){navPush('form');const d=formDrafts.get(String(selectedBike.id));showForm(d?.values||{});}
 const fields=[['full_name','Nome completo','text'],['cpf','CPF','text'],['birth_date','Data de nascimento','text'],['phone','Telefone com DDD','tel'],['email','E-mail','email'],['relative_1_name','Nome do parente','text'],['relative_1_phone','Telefone com DDD','tel'],['relative_1_relation','Grau de parentesco','select'],['relative_2_name','Nome do parente','text'],['relative_2_phone','Telefone com DDD','tel'],['relative_2_relation','Grau de parentesco','select']];
 function galleryPhotos(b){return [...new Set((b.photos||[]).slice(1).filter(Boolean))]}
-function formGallery(b){const photos=galleryPhotos(b);if(!photos.length)return '';return `<div class="form-gallery" id="form-gallery"><button type="button" class="gallery-arrow" id="gallery-prev" aria-label="Foto anterior">‹</button><div class="gallery-photo"><img id="gallery-img" src="${esc(photoUrl(photos[0]))}" alt="Foto da moto ${esc(b.model)}"></div><button type="button" class="gallery-arrow" id="gallery-next" aria-label="Próxima foto">›</button></div><div class="gallery-indicators" id="gallery-indicators">${photos.map((_,i)=>`<span class="${i===0?'active':''}"></span>`).join('')}</div>`}
+function formGallery(b){const photos=galleryPhotos(b);if(!photos.length)return '';return `<div class="form-gallery ${photos.length===1?'single-photo':''}" id="form-gallery"><button type="button" class="gallery-arrow" id="gallery-prev" aria-label="Foto anterior">‹</button><div class="gallery-photo"><img id="gallery-img" src="${esc(photoUrl(photos[0]))}" alt="Foto da moto ${esc(b.model)}"></div><button type="button" class="gallery-arrow" id="gallery-next" aria-label="Próxima foto">›</button></div><div class="gallery-indicators" id="gallery-indicators">${photos.map((_,i)=>`<span class="${i===0?'active':''}"></span>`).join('')}</div>`}
 function bindFormGallery(b){const photos=galleryPhotos(b),img=$('#gallery-img');if(!img)return;let current=0;const move=delta=>{current=(current+delta+photos.length)%photos.length;img.src=photoUrl(photos[current]);document.querySelectorAll('#gallery-indicators span').forEach((el,i)=>el.classList.toggle('active',i===current))};$('#gallery-prev').onclick=()=>move(-1);$('#gallery-next').onclick=()=>move(1);if(photos.length<2){$('#gallery-prev').classList.add('hidden');$('#gallery-next').classList.add('hidden')}}
 const relations=['Pai','Mãe','Irmão','Irmã','Avô','Avó','Tio','Tia','Filho','Filha','Primo','Prima','Cunhado','Cunhada','Sogro','Sogra','Genro','Nora'];
 function fieldHtml(id,label,type,values){if(type==='select')return `<div class="field"><label for="${id}">${label} *</label><select id="${id}" name="${id}" required><option value="">Selecione o parentesco</option>${relations.map(r=>`<option value="${r}" ${values[id]===r?'selected':''}>${r}</option>`).join('')}</select><span class="error" data-error="${id}"></span></div>`;

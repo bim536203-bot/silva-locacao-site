@@ -1,10 +1,6 @@
-CADASTRO — VERSÃO 14
-
-- Corrigido salvamento de motos sem informar cor.
-- Cores existentes preservadas.
-- Animação de pressionar/soltar em todos os botões, inclusive botões criados dinamicamente e links de ação.
-- Respeitada a preferência do aparelho por movimento reduzido.
-- Vibração curta em Solicitar aluguel e Enviar cadastro nos navegadores compatíveis. Safari/iPhone não oferece a API navigator.vibrate.
-- Leitura de CNH e notificações da ADM preservadas.
-
-A migração backend/v14-optional-color.sql já foi aplicada ao banco do site. Os testes de salvamento foram revertidos, sem deixar motos de teste. Os testes de vibração verificaram as chamadas da API; testes físicos em celulares não foram realizados.
+CADASTRO — VERSÃO 15
+Correção da foto única na galeria do cadastro: centralizada em toda a largura.
+Efeito de clique iniciado ao tocar, com realce visível também quando movimento reduzido está ativo.
+Vibração mantida em Solicitar aluguel e Enviar cadastro nos navegadores compatíveis; Safari não suporta Vibration API.
+Referências de CSS e JS atualizadas para evitar cache da versão anterior.
+Demais funcionalidades da V14 preservadas.
