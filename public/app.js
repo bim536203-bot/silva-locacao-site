@@ -3,7 +3,16 @@ const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=
 const cfg=window.SILVA_CONFIG||{}, ready=!!(cfg.supabaseUrl&&cfg.supabaseAnonKey&&window.supabase), db=ready?window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey):null;
 let preloadedPhotos=new Map();let bikes=[],settings={},session=null,adminTimer=null,tab='dashboard',applications=[],notifications=[],draftTimer=null,selectedBike=null,formDrafts=new Map();
 const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}), date=s=>s?new Date(s).toLocaleString('pt-BR',{timeZone:'America/Boa_Vista'}):'—';
-function buzz(){try{navigator.vibrate?.(100)}catch{}}
+
+// Feedback applies to existing and dynamically created buttons without changing their actions.
+document.addEventListener('click',event=>{
+ const button=event.target?.closest?.('button,input[type="button"],input[type="submit"],a.btn,a.mini,[role="button"]');
+ if(!button||button.disabled||button.getAttribute('aria-disabled')==='true')return;
+ button.classList.remove('click-feedback');void button.offsetWidth;button.classList.add('click-feedback');
+ setTimeout(()=>button.classList.remove('click-feedback'),260);
+},true);
+
+function buzz(){try{if(typeof navigator.vibrate==='function')navigator.vibrate(70)}catch{}}
 function navPush(page){try{history.pushState({cadastroPage:page},'',location.href)}catch{}}
 window.addEventListener('popstate',()=>{if(!$('#modal').classList.contains('hidden')){close();return}if(!$('#customer').classList.contains('hidden')){$('#customer').classList.add('hidden');$('#public').classList.remove('hidden');return}if(!$('#admin').classList.contains('hidden')){if(tab!=='dashboard'){tab='dashboard';renderAdmin()}else{$('#admin-public-back').click()}return}hideDrawer()});
 function toast(msg){

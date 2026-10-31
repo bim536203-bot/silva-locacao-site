@@ -84,3 +84,10 @@ body:has(#admin:not(.hidden)) .floating-admin-lock,body:has(#customer:not(.hidde
 .availability-option{padding:13px 8px;border-radius:10px;border:1px solid #ddd;background:#f1f1f1;color:#333;font-weight:750;min-width:0}
 .availability-option.available[aria-pressed="true"]{background:#079b45;color:white;border-color:#079b45}
 .availability-option.unavailable[aria-pressed="true"]{background:#c5222a;color:white;border-color:#c5222a}
+
+/* V14: tactile visual feedback for every button, including dynamic controls. */
+:where(button,input[type="button"],input[type="submit"],a.btn,a.mini,[role="button"]){touch-action:manipulation;transition:transform .12s ease,filter .12s ease}
+:where(button,input[type="button"],input[type="submit"],a.btn,a.mini,[role="button"]):active:not(:disabled):not([aria-disabled="true"]){transform:scale(.96);filter:brightness(.92)}
+.click-feedback{animation:cadastro-button-tap .24s ease-out}
+@keyframes cadastro-button-tap{0%{transform:scale(1)}40%{transform:scale(.96);filter:brightness(.92)}100%{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){:where(button,input[type="button"],input[type="submit"],a.btn,a.mini,[role="button"]){transition:none}.click-feedback{animation:none}:where(button,input[type="button"],input[type="submit"],a.btn,a.mini,[role="button"]):active:not(:disabled){transform:none;filter:brightness(.92)}}

@@ -1,12 +1,10 @@
-CADASTRO — VERSÃO 13
-Base: CADASTRO_VERSAO_12_NOTIFICACOES(1).zip
-Alterações:
-- ADM Motos: removidos botões subir/descer, mantido Editar.
-- Formulário Adicionar/Editar moto: campo Cor removido da interface; valor existente preservado no banco.
-- Disponibilidade: dois botões exclusivos Disponível (verde) / Indisponível (vermelho).
-- Catálogo: disponíveis primeiro, indisponíveis sempre no final.
-- Indisponíveis: status cinza com bolinha branca; botão cinza "Disponível em Breve" desativado.
-- Ícones iPhone/Android: fundo amarelo e logotipo preservado.
-- Backend de notificações e leitura de CNH da V12 preservado sem alterações.
+CADASTRO — VERSÃO 14
 
-Observação: esta entrega contém código, não altera o site publicado nem o banco Supabase automaticamente. É necessário publicar o conteúdo de public/ no serviço usado. Testes de ponta a ponta e notificações em aparelhos físicos não foram executados.
+- Corrigido salvamento de motos sem informar cor.
+- Cores existentes preservadas.
+- Animação de pressionar/soltar em todos os botões, inclusive botões criados dinamicamente e links de ação.
+- Respeitada a preferência do aparelho por movimento reduzido.
+- Vibração curta em Solicitar aluguel e Enviar cadastro nos navegadores compatíveis. Safari/iPhone não oferece a API navigator.vibrate.
+- Leitura de CNH e notificações da ADM preservadas.
+
+A migração backend/v14-optional-color.sql já foi aplicada ao banco do site. Os testes de salvamento foram revertidos, sem deixar motos de teste. Os testes de vibração verificaram as chamadas da API; testes físicos em celulares não foram realizados.
