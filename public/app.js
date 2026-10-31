@@ -90,5 +90,5 @@ function showCustomerCpf(){navPush('customer');
  }catch(err){toast('Não foi possível consultar os cadastros. Tente novamente.');btn.disabled=false;btn.textContent='CONSULTAR CADASTROS';console.error('Consulta:',err.message)}
  };
 }
-loadPublic();getDraft();setInterval(getDraft,60000);if(ready){db.channel('public-motos').on('postgres_changes',{event:'*',schema:'public',table:'website_motorcycles'},()=>loadPublic()).subscribe();db.auth.getSession().then(({data})=>{session=data.session})}
+loadPublic();if(ready){db.channel('public-motos').on('postgres_changes',{event:'*',schema:'public',table:'website_motorcycles'},()=>loadPublic()).subscribe();db.auth.getSession().then(({data})=>{session=data.session})}
 })();
