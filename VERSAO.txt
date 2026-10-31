@@ -1,0 +1,12 @@
+CADASTRO — VERSÃO 13
+Base: CADASTRO_VERSAO_12_NOTIFICACOES(1).zip
+Alterações:
+- ADM Motos: removidos botões subir/descer, mantido Editar.
+- Formulário Adicionar/Editar moto: campo Cor removido da interface; valor existente preservado no banco.
+- Disponibilidade: dois botões exclusivos Disponível (verde) / Indisponível (vermelho).
+- Catálogo: disponíveis primeiro, indisponíveis sempre no final.
+- Indisponíveis: status cinza com bolinha branca; botão cinza "Disponível em Breve" desativado.
+- Ícones iPhone/Android: fundo amarelo e logotipo preservado.
+- Backend de notificações e leitura de CNH da V12 preservado sem alterações.
+
+Observação: esta entrega contém código, não altera o site publicado nem o banco Supabase automaticamente. É necessário publicar o conteúdo de public/ no serviço usado. Testes de ponta a ponta e notificações em aparelhos físicos não foram executados.
