@@ -27,14 +27,14 @@ return page.TextOverlay.Lines.flatMap((line:any)=>{
     });
   });
 }
-export async function readImagePdf(bytes:Uint8Array,expectedPages:number){
+export async function readImagePdf(bytes:Uint8Array,expectedPages:number,mime='application/pdf'){
   const key=Deno.env.get('OCR_SPACE_API_KEY');
   if(!key)throw new VerificationError('A leitura de CNH em imagem está temporariamente indisponível. Tente novamente mais tarde.');
   // Free OCR.space account: do not silently upgrade or change the original stored file.
   if(bytes.length>1000000)throw new VerificationError('Para conferir uma CNH com dados em imagem, o PDF deve ter até 1 MB. O serviço gratuito de leitura não aceita arquivos maiores.');
   const form=new FormData();
-  form.append('file',new Blob([new Uint8Array(bytes)],{type:'application/pdf'}),'cnh.pdf');
-  form.append('filetype','PDF');form.append('language','por');form.append('OCREngine','2');
+  form.append('file',new Blob([new Uint8Array(bytes)],{type:mime}),mime==='application/pdf'?'cnh.pdf':'cnh.jpg');
+  form.append('filetype',mime==='application/pdf'?'PDF':'JPG');form.append('language','por');form.append('OCREngine','2');
   form.append('isOverlayRequired','true');form.append('detectOrientation','true');
   form.append('scale','true');form.append('isCreateSearchablePdf','false');
   let response:Response;
@@ -68,6 +68,41 @@ export async function verifyCnh(bytes:Uint8Array,name:string,cpf:string,birthDat
     // A proven text mismatch must not be overridden by OCR.
     if(!(error instanceof VerificationError)||error.field!=='cnh')throw error;
   }
+  // CDT puts the original card images inside an A4 page. Read those JPEGs
+  // at native resolution, avoiding the QR code and the small print on that page.
+  const candidates=await nativeCardImages(bytes);
+  for(const candidate of candidates){
+    const imagePages=await readImagePdf(candidate,1,'image/jpeg');
+    try{return checkCnhItems(imagePages,name,cpf,birthDate);}
+    catch(error){if(!(error instanceof VerificationError)||error.field!=='cnh')throw error;}
+  }
   const imagePages=await readImagePdf(bytes,pageCount);
   return checkCnhItems(imagePages,name,cpf,birthDate);
+}
+
+export async function nativeCardImages(bytes:Uint8Array):Promise<Uint8Array[]>{
+  if(bytes.length>1000000)return [];
+  try{
+    const {PDFDocument,PDFName,PDFRawStream,PDFDict,PDFNumber}=await import('npm:pdf-lib@1.17.1');
+    const doc=await PDFDocument.load(bytes,{updateMetadata:false});
+    const found:Uint8Array[]=[];const seen=new Set<any>();
+    for(const page of doc.getPages().slice(0,3)){
+      const resources=page.node.Resources();
+      const objects=resources?.lookupMaybe(PDFName.of('XObject'),PDFDict);
+      if(!objects)continue;
+      for(const [,ref] of objects.entries()){
+        const object=doc.context.lookup(ref);
+        if(!(object instanceof PDFRawStream)||seen.has(object))continue;
+        seen.add(object);
+        if(String(object.dict.get(PDFName.of('Subtype')))!=='/Image'||String(object.dict.get(PDFName.of('Filter')))!=='/DCTDecode')continue;
+        const width=object.dict.lookupMaybe(PDFName.of('Width'),PDFNumber)?.asNumber()||0;
+        const height=object.dict.lookupMaybe(PDFName.of('Height'),PDFNumber)?.asNumber()||0;
+        if(width<600||height<400||width/height<1.15||width/height>1.8||width*height>4000000)continue;
+        const data=object.getContents();
+        if(data.length>1000000||data[0]!==255||data[1]!==216)continue;
+        found.push(new Uint8Array(data));if(found.length===2)return found;
+      }
+    }
+    return found;
+  }catch{return [];}
 }
