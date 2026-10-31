@@ -38,7 +38,9 @@ Deno.serve(async req=>{
  assert(extras.email.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(extras.email),'Informe um e-mail válido.');
  for(const n of [1,2]){
  const name=extras[`relative_${n}_name`],phone=extras[`relative_${n}_phone`].replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,''),relation=extras[`relative_${n}_relation`];
- assert(name.length>=2&&name.length<=150&&/^\d{10,11}$/.test(phone)&&['Pai','Mãe','Irmão','Irmã','Avô','Avó','Tio','Tia','Filho','Filha','Primo','Prima','Outro'].includes(relation),'Confira os contatos dos parentes.');
+ if(name.length<2||name.length>150)throw new VerificationError('Informe o nome do '+n+'º parente.','relative_'+n+'_name');
+ if(!/^\d{10,11}$/.test(phone))throw new VerificationError('Informe um telefone com DDD válido para o '+n+'º parente.','relative_'+n+'_phone');
+ if(!['Pai','Mãe','Irmão','Irmã','Avô','Avó','Tio','Tia','Filho','Filha','Primo','Prima','Cunhado','Cunhada','Sogro','Sogra','Genro','Nora','Outro'].includes(relation))throw new VerificationError('Selecione o grau de parentesco do '+n+'º parente.','relative_'+n+'_relation');
  extras[`relative_${n}_phone`]=phone;
  }
  Object.assign(data,extras);
