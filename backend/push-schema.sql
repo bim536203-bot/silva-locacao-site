@@ -1,0 +1,21 @@
+create table public.website_push_keys (id boolean primary key default true check(id),public_key text not null,private_key text not null,created_at timestamptz not null default now());
+create table public.website_push_subscriptions (id uuid primary key default gen_random_uuid(),admin_id uuid not null references auth.users(id) on delete cascade,endpoint text not null unique check(length(endpoint)<=4096),keys jsonb not null,created_at timestamptz not null default now(),updated_at timestamptz not null default now());
+create index website_push_subscriptions_admin on public.website_push_subscriptions(admin_id);
+create table public.website_push_deliveries (id bigint generated always as identity primary key,notification_id uuid not null references public.website_notifications(id) on delete cascade,subscription_id uuid not null references public.website_push_subscriptions(id) on delete cascade,attempts int not null default 0,available_at timestamptz not null default now(),delivered_at timestamptz,created_at timestamptz not null default now(),unique(notification_id,subscription_id));
+create index website_push_pending on public.website_push_deliveries(available_at) where delivered_at is null;
+alter table public.website_push_keys enable row level security;
+alter table public.website_push_subscriptions enable row level security;
+alter table public.website_push_deliveries enable row level security;
+revoke all on public.website_push_keys,public.website_push_subscriptions,public.website_push_deliveries from public,anon,authenticated;
+grant all on public.website_push_keys,public.website_push_subscriptions,public.website_push_deliveries to service_role;
+grant usage,select on sequence public.website_push_deliveries_id_seq to service_role;
+create function public.website_queue_push() returns trigger language plpgsql security invoker set search_path='' as $$begin insert into public.website_push_deliveries(notification_id,subscription_id) select new.id,s.id from public.website_push_subscriptions s join public.website_admin_users a on a.user_id=s.admin_id;return new;end$$;
+revoke all on function public.website_queue_push() from public,anon,authenticated;
+grant execute on function public.website_queue_push() to service_role;
+create trigger website_notification_push after insert on public.website_notifications for each row execute function public.website_queue_push();
+create function public.website_claim_push() returns table(job_id bigint,notification_id uuid,subscription_id uuid,admin_id uuid,endpoint text,keys jsonb,attempts int) language sql security invoker set search_path='' as $$
+with pending as (select d.id from public.website_push_deliveries d where d.delivered_at is null and d.attempts<5 and d.available_at<=now() and d.created_at>now()-interval '1 day' order by d.id for update skip locked limit 20), claimed as (update public.website_push_deliveries d set available_at=now()+interval '2 minutes',attempts=d.attempts+1 from pending where d.id=pending.id returning d.*) select c.id,c.notification_id,c.subscription_id,s.admin_id,s.endpoint,s.keys,c.attempts from claimed c join public.website_push_subscriptions s on s.id=c.subscription_id;
+$$;
+revoke all on function public.website_claim_push() from public,anon,authenticated;
+grant execute on function public.website_claim_push() to service_role;
+select cron.schedule('website-push-dispatch','* * * * *',$cron$ select net.http_post(url:='https://teivocjmasamonrivoxc.supabase.co/functions/v1/website-gateway?action=scheduled_push',headers:=jsonb_build_object('Content-Type','application/json','Authorization','Bearer '||(select token from website_private.maintenance_credentials where id)),body:='{}'::jsonb,timeout_milliseconds:=10000); $cron$);

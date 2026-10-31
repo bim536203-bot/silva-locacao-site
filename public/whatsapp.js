@@ -1,7 +1,7 @@
 // Mensagens geradas a partir dos dados persistidos do cadastro.
 // Nenhum envio é feito automaticamente.
 const digits = v => String(v ?? '').replace(/\D/g, '');
-const relationArticles = {Pai:'o pai',Mãe:'a mãe',Irmão:'o irmão',Irmã:'a irmã',Avô:'o avô',Avó:'a avó',Tio:'o tio',Tia:'a tia',Filho:'o filho',Filha:'a filha',Primo:'o primo',Prima:'a prima'};
+const relationArticles = {Pai:'o pai',Mãe:'a mãe',Irmão:'o irmão',Irmã:'a irmã',Avô:'o avô',Avó:'a avó',Tio:'o tio',Tia:'a tia',Filho:'o filho',Filha:'a filha',Primo:'o primo',Prima:'a prima',Cunhado:'o cunhado',Cunhada:'a cunhada',Sogro:'o sogro',Sogra:'a sogra',Genro:'o genro',Nora:'a nora'};
 export function relativeMessage(application, n) {
   const name = String(application[`relative_${n}_name`] ?? '').trim();
   const relation = String(application[`relative_${n}_relation`] ?? '').trim();

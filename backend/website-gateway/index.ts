@@ -1,3 +1,4 @@
+import { pushAction, dispatchPush } from './push.ts';
 import { verifyCnh } from './cnh-reader.ts';
 import { checkContacts, VerificationError } from './validation.js';
 import { createClient } from 'npm:@supabase/supabase-js@2.95.3';
@@ -56,13 +57,15 @@ Deno.serve(async req=>{
  const docs=[];let complete=false;
  try{
  for(const [i,kind,f] of [[0,'cnh',cnh],[1,'face',face]] as const){const r=await db.storage.from('website-application-documents').upload(paths[i],f.bytes,{contentType:f.mime,upsert:false});assert(!r.error,'Falha ao armazenar documentos. Tente novamente.');docs.push({kind,path:paths[i],mime_type:f.mime,size_bytes:f.size});}
- const r=await db.rpc('website_finalize',{p_id:id,p_data:data,p_docs:docs});assert(!r.error,'Não foi possível concluir o cadastro. Tente novamente.');complete=true;return result({id:r.data});
+ const r=await db.rpc('website_finalize',{p_id:id,p_data:data,p_docs:docs});assert(!r.error,'Não foi possível concluir o cadastro. Tente novamente.');complete=true;const sending=dispatchPush(db).catch(()=>console.warn('website_push_dispatch_failed'));const runtime=(globalThis as any).EdgeRuntime;if(runtime?.waitUntil)runtime.waitUntil(sending);else await sending;return result({id:r.data});
  }finally{if(!complete)await db.storage.from('website-application-documents').remove(paths);}
  }
  // All other actions require a real Auth user AND membership, rechecked server-side.
  const token=(req.headers.get('authorization')||'').replace(/^Bearer /i,'');let adminId:string|null=null;
- if(action==='scheduled_clean'){const valid=await db.rpc('website_maintenance_token_valid',{p_token:token});if(valid.error||!valid.data)return result({error:'Acesso negado'},401);}else{const user=await db.auth.getUser(token);if(user.error||!user.data.user)return result({error:'Acesso negado'},401);const admin=await db.from('website_admin_users').select('user_id').eq('user_id',user.data.user.id).maybeSingle();if(!admin.data)return result({error:'Acesso negado'},403);adminId=user.data.user.id;}
+ if(action==='scheduled_clean'||action==='scheduled_push'){const valid=await db.rpc('website_maintenance_token_valid',{p_token:token});if(valid.error||!valid.data)return result({error:'Acesso negado'},401);}else{const user=await db.auth.getUser(token);if(user.error||!user.data.user)return result({error:'Acesso negado'},401);const admin=await db.from('website_admin_users').select('user_id').eq('user_id',user.data.user.id).maybeSingle();if(!admin.data)return result({error:'Acesso negado'},403);adminId=user.data.user.id;}
  const body=await req.json();
+ if(action==='scheduled_push')return result(await dispatchPush(db));
+ if(action.startsWith('push_')){if(!adminId)return result({error:'Acesso negado'},403);return result(await pushAction(db,adminId,action,body));}
  if(action==='document'){
  assert(['view','download'].includes(body.action),'Ação inválida.');
  const r=await db.from('website_application_documents').select('*').eq('id',body.document_id).single();assert(r.data&&!r.error,'Documento não encontrado.');
@@ -78,4 +81,3 @@ Deno.serve(async req=>{
  return result({error:'Ação inválida'},404);
  }catch(e){return result({error:e instanceof Error?e.message:'Não foi possível concluir a operação.',field:e instanceof VerificationError?e.field:undefined},400)}
 });
-

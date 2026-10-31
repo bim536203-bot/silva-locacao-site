@@ -1,0 +1,14 @@
+CADASTRO — VERSÃO 12 — NOTIFICAÇÕES DA ADM
+Base: CADASTRO_VERSAO_11_ATUALIZADA_FINAL(1).zip enviado pelo usuário.
+
+Nova terceira caixa Notificações, ativação manual por aparelho, teste e desativação.
+No iPhone (iOS 16.4 ou superior): Safari → Compartilhar → Adicionar à Tela de Início; abra pelo ícone Cadastro, entre na ADM e toque em Notificações/Permitir.
+No Android compatível: entre na ADM pelo Chrome atualizado e toque em Notificações/Permitir.
+Confira as permissões de Tela Bloqueada nos Ajustes. Foco, economia de bateria e conexão podem afetar os avisos. Não há garantia de entrega imediata em todas as condições do aparelho.
+
+O servidor envia NOVO CADASTRO RECEBIDO! somente depois que o cadastro foi salvo. Nenhum dado pessoal aparece no push. A fila tenta novamente se o serviço de push falhar. Sair da ADM desativa neste aparelho.
+O service worker cuida apenas de notificações; não armazena páginas, sessões ou documentos em cache.
+
+Backend e tabelas usam somente o prefixo website_. Outros aplicativos foram preservados.
+Chaves de push e OCR permanecem no servidor. Nenhuma chave privada acompanha este pacote.
+Os testes físicos de tela bloqueada dependem de permitir as notificações nos aparelhos.

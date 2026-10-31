@@ -71,3 +71,5 @@ body:has(#admin:not(.hidden)) .floating-admin-lock,body:has(#customer:not(.hidde
 #toast.hidden{display:none!important}
 /* Ação WhatsApp acessível somente nos detalhes da ADM */
 .relative-whatsapp{margin-top:10px;background:#e6f6ea!important;color:#136c35!important;border:1px solid #b4e1c0!important;font-weight:700;min-height:40px}
+
+@media(min-width:760px){.admin-home{grid-template-columns:repeat(3,minmax(0,1fr));max-width:980px}}
