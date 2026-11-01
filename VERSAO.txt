@@ -1,4 +1,2 @@
-CADASTRO — VERSÃO 21
-Anexos Word e documento da moto com acesso privado à ADM.
-Geração de contrato PDF no navegador, somente no clique, com dados do cliente e anexos.
-Preserva o Bairro e demais funções da V20. Revise o PDF antes de usar.
+CADASTRO — VERSÃO 22
+Contrato com layout fixo do PDF aprovado, foto na tabela e selo privado por moto.

@@ -3,7 +3,7 @@
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
   Permissions-Policy: camera=(self), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'nonce-cadastro-docx-v21'; img-src 'self' https://teivocjmasamonrivoxc.supabase.co blob: data:; connect-src 'self' https://teivocjmasamonrivoxc.supabase.co wss://teivocjmasamonrivoxc.supabase.co; frame-src blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self'; img-src 'self' https://teivocjmasamonrivoxc.supabase.co blob: data:; connect-src 'self' https://teivocjmasamonrivoxc.supabase.co wss://teivocjmasamonrivoxc.supabase.co; frame-src blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 /config.js
   Cache-Control: no-store
 

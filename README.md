@@ -17,3 +17,13 @@ Na ADM, salve em cada moto o modelo Word compatível (.docx) e, opcionalmente, o
 Em um cadastro, Gerar contrato PDF solicita número do contrato, início da locação e registro da CNH. Preenche os dados do cliente no modelo e junta foto, CNH e documento da moto. O PDF é preparado no navegador e pode ser visualizado e baixado; não assina nem aprova o cadastro. Confira veículo, valores e cláusulas do modelo antes de gerar. A paginação pode variar em relação ao Word.
 
 Validação: preenchimento do modelo, escape de XML, campos obrigatórios, falha com limpeza dos novos uploads, acesso autenticado/anonimato e geração no navegador de seis páginas A4 com anexos sintéticos.
+
+## Contratos V22
+
+A conversão visual de Word foi substituída por preenchimento de uma base PDF fixa de quatro páginas, derivada da referência aprovada e mantida privadamente no banco. Bordas, linhas, cláusulas e posições estáticas permanecem no PDF original. Dados e imagens variáveis são inseridos em retângulos fixos; textos longos reduzem a fonte até 6 pt e são recusados se ainda não couberem.
+
+A ADM importa um selo PNG/JPG por moto, no mesmo armazenamento privado dos anexos. Ao gerar, informa número, início, registro CNH e CEP. Placa, Renavam, chassi e cor são lidos do Word da moto; o ano é conferido contra a moto cadastrada. Modelo/ano e valores semanais/caução vêm do cadastro da moto. As cláusulas seguem o PDF aprovado (edições de cláusulas no Word não são aplicadas). O selo é reproduzido como enviado: confira se seu número corresponde ao número informado.
+
+A foto fica na tabela, sem página separada; CNH e documento do veículo são anexados em seguida. Assinaturas de locatários anteriores e seus dados foram removidos da base. A assinatura do locador, já existente no modelo aprovado, permanece. Não cria assinatura do cliente.
+
+Testes V22: geração real no navegador com dados fictícios, base de quatro páginas, CNH anexa, posição da foto, upload privado de selo e autorização da base (admin permitido, demais usuários e anônimos bloqueados). Nenhum aparelho físico foi testado.

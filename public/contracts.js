@@ -3,7 +3,7 @@ const BUCKET='website-motorcycle-documents';
 const DOCX='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const scripts=new Map();
 async function script(src){if(!scripts.has(src))scripts.set(src,new Promise((resolve,reject)=>{const el=document.createElement('script');el.src=src;el.onload=resolve;el.onerror=()=>{scripts.delete(src);reject(new Error('Não foi possível carregar o gerador. Confira a internet e tente novamente.'))};document.head.appendChild(el)}));return scripts.get(src)}
-async function libs(){await script('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');await script('https://cdn.jsdelivr.net/npm/docx-preview@0.3.6/dist/docx-preview.min.js');await script('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js');await script('https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js')}
+async function libs(){await script('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');await script('https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js')}
 export async function saveBikeAttachments(db,bike,inputs){
  const uploaded=[],patch={};
  try{for(const [kind,file] of inputs){if(!file)continue;if(file.size<1||file.size>5242880)throw new Error('Cada anexo deve ter até 5 MB.');let ext,mime;
@@ -14,7 +14,7 @@ export async function saveBikeAttachments(db,bike,inputs){
  // Refuse active or external content. Prevent a template from fetching private/external resources.
  for(const n of Object.keys(zip.files)){if(/vbaProject|embeddings\//i.test(n))throw new Error('Use um Word sem macros ou objetos incorporados.');if(n.endsWith('.rels')&&/TargetMode\s*=\s*["']External["']/i.test(await zip.file(n).async('string')))throw new Error('Remova links e imagens externas do modelo Word antes de anexar.');}
  ext='docx';mime=DOCX;
- }else if(new TextDecoder().decode(bytes.slice(0,5))==='%PDF-'){ext='pdf';mime='application/pdf';}else if(bytes[0]===255&&bytes[1]===216){ext='jpg';mime='image/jpeg';}else if(bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71){ext='png';mime='image/png';}else throw new Error('O documento da moto deve ser PDF, JPG ou PNG.');
+ }else if(kind==='contract_seal_path'){if(bytes[0]===255&&bytes[1]===216){ext='jpg';mime='image/jpeg';}else if(bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71){ext='png';mime='image/png';}else throw new Error('O selo deve ser uma imagem PNG ou JPG.');}else if(new TextDecoder().decode(bytes.slice(0,5))==='%PDF-'){ext='pdf';mime='application/pdf';}else if(bytes[0]===255&&bytes[1]===216){ext='jpg';mime='image/jpeg';}else if(bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71){ext='png';mime='image/png';}else throw new Error('O documento da moto deve ser PDF, JPG ou PNG.');
  const path=`${bike.id}/${crypto.randomUUID()}.${ext}`;const r=await db.storage.from(BUCKET).upload(path,bytes,{contentType:mime,upsert:false});if(r.error)throw new Error('Não foi possível salvar o anexo: '+r.error.message);uploaded.push(path);patch[kind]=path;
  }
  if(uploaded.length){const r=await db.from('website_motorcycles').update(patch).eq('id',bike.id);if(r.error)throw r.error;Object.assign(bike,patch);}return patch;
@@ -38,22 +38,61 @@ export function fillTemplateXml(xml,a,details,parser=DOMParser,serializer=XMLSer
 }
 async function download(db,path){const r=await db.storage.from(BUCKET).download(path);if(r.error||!r.data)throw new Error('Anexo da moto indisponível. Confira os arquivos salvos na moto.');return r.data}
 async function appendPdfOrImage(pdf,blob){const bytes=new Uint8Array(await blob.arrayBuffer());if(new TextDecoder().decode(bytes.slice(0,5))==='%PDF-'){const src=await PDFLib.PDFDocument.load(bytes);if(src.getPageCount()>30)throw new Error('Documento com páginas demais. Use até 30 páginas por anexo.');const pages=await pdf.copyPages(src,src.getPageIndices());pages.forEach(p=>pdf.addPage(p));}else{const image=bytes[0]===137?await pdf.embedPng(bytes):await pdf.embedJpg(bytes);const p=pdf.addPage([595.28,841.89]);const fit=image.scaleToFit(535,760);p.drawImage(image,{x:(595.28-fit.width)/2,y:(841.89-fit.height)/2,width:fit.width,height:fit.height});}}
+// Coordinates use the approved PDF's original top-left coordinate system (points).
+export function vehicleFromWord(xml,parser=DOMParser){
+ const doc=new parser().parseFromString(xml,'application/xml');
+ const cells=[...doc.getElementsByTagNameNS(W,'tc')];const out={};
+ for(const c of cells){const text=[...c.getElementsByTagNameNS(W,'t')].map(x=>x.textContent).join('');const m=text.match(/^\s*(MODELO D[O]? VEÍCULO|ANO|COR|PLACA|RENAVAM|CHASSI)\s*:\s*(.+)/i);if(m)out[normalize(m[1])]=m[2].trim();}
+ for(const k of ['PLACA','RENAVAM','CHASSI','COR'])if(!out[k])throw new Error('Complete '+k+' no modelo Word da moto.');return out;
+}
+const cleanText=s=>String(s??'').normalize('NFC').replace(/[\r\n\t]+/g,' ').replace(/\s+/g,' ').trim();
+export async function fillFixedLayout(pdf,{bike,application:a,details,vehicle,faceBytes,sealBytes,bikeBytes}){
+ const font=await pdf.embedFont(PDFLib.StandardFonts.Helvetica),bold=await pdf.embedFont(PDFLib.StandardFonts.HelveticaBold),serif=await pdf.embedFont(PDFLib.StandardFonts.TimesRoman);
+ if(pdf.getPageCount()!==4)throw new Error('Base do contrato inválida.');
+ const pages=pdf.getPages();for(const p of pages)p.pushOperators(PDFLib.beginText(),PDFLib.setCharacterSpacing(0),PDFLib.setWordSpacing(0),PDFLib.setCharacterSqueeze(100),PDFLib.setTextRise(0),PDFLib.endText());
+ function line(page,text,x,top,width,size=10,f=font,color=PDFLib.rgb(0,0,0)){text=cleanText(text);try{while(f.widthOfTextAtSize(text,size)>width&&size>6)size-=.1;if(f.widthOfTextAtSize(text,size)>width)throw Error();page.drawText(text,{x,y:page.getHeight()-top-size,font:f,size,color});}catch{throw new Error('Um dos campos é longo demais ou contém caracteres incompatíveis. Revise os dados antes de gerar.');}}
+ const imageCache=new Map();
+ async function picture(page,bytes,box){if(!imageCache.has(bytes))imageCache.set(bytes,bytes[0]===137?await pdf.embedPng(bytes):await pdf.embedJpg(bytes));const image=imageCache.get(bytes);const [x,top,w,h]=box,fit=image.scaleToFit(w,h);page.drawImage(image,{x:x+(w-fit.width)/2,y:page.getHeight()-top-h+(h-fit.height)/2,width:fit.width,height:fit.height});}
+ // Original stamp rectangles and header positions are preserved on each contract page.
+ const stamps=[[429.22,723.77,145.21,73.1],[430.27,724.72,145.21,73.1],[429.02,539.67,145.21,73.1],[429.52,667.27,145.21,73.1]];
+ for(let i=0;i<4;i++){const [x,top,size]=[[482.62,37.77,9],[471.7,29.28,11.04],[470.26,30.72,11.04],[471.82,31.08,11.04]][i];line(pages[i],'CONTRATO Nº '+details.number,x,top,98,size,font);await picture(pages[i],sealBytes,stamps[i]);}
+ const p=pages[1];
+ line(p,bike.model,61.1,126.9,135);line(p,String(bike.year),203.2,126.9,48);
+ line(p,vehicle.COR,61.1,164,73);line(p,vehicle.PLACA,143.1,164,100);
+ line(p,vehicle.RENAVAM,61.1,207.5,185);line(p,vehicle.CHASSI,61.1,247.3,185);
+ await picture(p,bikeBytes,[259,112,277,194]);
+ const cpf=String(a.cpf).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
+ const birth=a.birth_date.split('-').reverse().join('/');
+ line(p,a.full_name,41.4,423.2,218);line(p,cpf,266.1,423.2,98);
+ line(p,birth,41.4,460.6,110);line(p,details.cnhRegistration,179.7,459.5,180);
+ line(p,[a.address,a.house_number].filter(Boolean).join(', '),41.4,498.9,218);line(p,a.neighborhood,266.1,498.8,98);
+ line(p,details.cep,39.7,536.7,145);line(p,a.phone,195.5,536.7,168);
+ for(const [n,top] of [[1,572.1],[2,599.5]])line(p,`(${a['relative_'+n+'_relation']} – ${a['relative_'+n+'_name']})  ${a['relative_'+n+'_phone']}`,39.7,top,322,9);
+ line(p,a.email,39.7,629.3,322);await picture(p,faceBytes,[379.89,425.4,148.8,198.4]);
+ // Keep the signature line at the approved location; never carry a prior tenant's signature.
+ line(pages[3],'Assinatura do locatário '+a.full_name+':',37.7,581.8,190,8,serif);
+ pages[3].drawLine({start:{x:230,y:pages[3].getHeight()-591},end:{x:407,y:pages[3].getHeight()-591},thickness:.5,color:PDFLib.rgb(0,0,0)});
+ const d=new Date(details.startDate+'T12:00:00Z');const date=new Intl.DateTimeFormat('pt-BR',{dateStyle:'full',timeZone:'America/Boa_Vista'}).format(d);
+ line(pages[3],'Data de início da locação:',54,781.4,138,11,serif,PDFLib.rgb(1,1,1));line(pages[3],date,192.17,781.4,188,11,serif,PDFLib.rgb(1,1,0));
+ const money=n=>'R$'+Number(n).toFixed(2).replace('.',',');
+ for(const [key,x,top] of [['weekly_price',228.18,192.26],['deposit',420.16,105.98],['deposit',196.75,213.74]])line(pages[3],money(bike[key]),x,top,42.1,10,serif);
+}
 export async function generateContract({db,bike,application,docs,gateway,details}){
  if(!bike?.contract_template_path)throw new Error('Anexe e salve o modelo Word nesta moto primeiro.');
- if(!details.number?.trim()||!/^\d{4}-\d{2}-\d{2}$/.test(details.startDate))throw new Error('Informe o número do contrato e a data de início.');
- await libs();const template=await download(db,bike.contract_template_path),zip=await JSZip.loadAsync(template);
- zip.file('word/document.xml',fillTemplateXml(await zip.file('word/document.xml').async('string'),application,details));
- const filled=await zip.generateAsync({type:'blob',mimeType:DOCX});
- const host=document.createElement('div');host.style.cssText='position:absolute;left:-12000px;top:0;width:1000px;background:white;pointer-events:none';document.body.appendChild(host);
- try{
- const styles=document.createElement('div');const appendStyle=styles.appendChild.bind(styles);styles.appendChild=node=>{if(node.nodeName==='STYLE')node.setAttribute('nonce','cadastro-docx-v21');return appendStyle(node)};
- await docx.renderAsync(filled,host,styles,{inWrapper:true,ignoreWidth:false,ignoreHeight:false,breakPages:true,ignoreLastRenderedPageBreak:false,useBase64URL:true});host.prepend(styles);await document.fonts.ready;
- await Promise.all([...host.querySelectorAll('img')].map(img=>img.complete?Promise.resolve():new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error('Imagem do Word não pôde ser carregada.'))})));
- const pages=[...host.querySelectorAll('section.docx')];if(!pages.length||pages.length>30)throw new Error('Não foi possível paginar o modelo Word.');
- const pdf=await PDFLib.PDFDocument.create();
- for(const page of pages){const canvas=await html2canvas(page,{scale:1.5,backgroundColor:'#ffffff',logging:false,useCORS:false});const image=await pdf.embedPng(canvas.toDataURL('image/png'));const width=parseFloat(getComputedStyle(page).width)*.75,height=parseFloat(getComputedStyle(page).minHeight)*.75;if(!width||!height)throw new Error('Tamanho de página do modelo inválido.');const fit=image.scaleToFit(width,height);pdf.addPage([width,height]).drawImage(image,{x:(width-fit.width)/2,y:(height-fit.height)/2,width:fit.width,height:fit.height});canvas.width=1;canvas.height=1;}
- for(const kind of ['face','cnh']){const d=docs.find(x=>x.kind===kind);if(!d)throw new Error('Falta '+(kind==='face'?'a foto do cliente.':'a CNH do cliente.'));const r=await gateway('document',{document_id:d.id,action:'view'},true);await appendPdfOrImage(pdf,await r.blob());}
- if(bike.vehicle_document_path)await appendPdfOrImage(pdf,await download(db,bike.vehicle_document_path));
+ if(!bike.contract_seal_path)throw new Error('Importe e salve a imagem do selo no cadastro desta moto.');
+ if(!bike.photos?.length)throw new Error('Cadastre uma foto desta moto.');
+ if(!details.number?.trim()||!/^\d{4}-\d{2}-\d{2}$/.test(details.startDate)||!details.cnhRegistration?.trim()||!/^\d{5}-?\d{3}$/.test(details.cep||''))throw new Error('Informe o número do contrato, a data, o registro da CNH e o CEP.');
+ for(const key of ['full_name','cpf','birth_date','phone','email','address','house_number','neighborhood','relative_1_name','relative_1_phone','relative_1_relation','relative_2_name','relative_2_phone','relative_2_relation'])if(!application[key])throw new Error('Complete os dados do cliente antes de gerar o contrato.');
+ await libs();
+ const [template,seal,layout]=await Promise.all([download(db,bike.contract_template_path),download(db,bike.contract_seal_path),db.rpc('website_contract_layout')]);
+ if(layout.error||!layout.data)throw new Error('Modelo de contrato indisponível. Entre novamente na ADM.');
+ const zip=await JSZip.loadAsync(template);const vehicle=vehicleFromWord(await zip.file('word/document.xml').async('string'));
+ if(String(vehicle.ANO)!==String(bike.year))throw new Error('O ano no Word é diferente do ano desta moto. Atualize o modelo Word antes de gerar.');
+ const photo=await db.storage.from('website-motorcycle-photos').download(bike.photos[0]);if(photo.error||!photo.data)throw new Error('Foto da moto indisponível.');
+ const face=docs.find(x=>x.kind==='face'),cnh=docs.find(x=>x.kind==='cnh');if(!face||!cnh)throw new Error('Falta a foto ou a CNH do cliente.');
+ const [faceResponse,cnhResponse]=await Promise.all([gateway('document',{document_id:face.id,action:'view'},true),gateway('document',{document_id:cnh.id,action:'view'},true)]);
+ const pdf=await PDFLib.PDFDocument.load(Uint8Array.from(atob(layout.data),c=>c.charCodeAt(0)));
+ await fillFixedLayout(pdf,{bike,application,details,vehicle,faceBytes:new Uint8Array(await faceResponse.arrayBuffer()),sealBytes:new Uint8Array(await seal.arrayBuffer()),bikeBytes:new Uint8Array(await photo.data.arrayBuffer())});
+ await appendPdfOrImage(pdf,await cnhResponse.blob());if(bike.vehicle_document_path)await appendPdfOrImage(pdf,await download(db,bike.vehicle_document_path));
  return new Blob([await pdf.save()],{type:'application/pdf'});
- }finally{host.remove();}
 }

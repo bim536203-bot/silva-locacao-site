@@ -1,6 +1,1 @@
-Atualizado na V21: anexos privados do Word e documento da moto implementados.
-O PDF é gerado no navegador da ADM somente no clique, preenchendo o modelo compatível e anexando foto, CNH e documento da moto quando salvo.
-Número, início da locação e registro da CNH são informados pela ADM. Os dados e condições da moto são os do modelo Word salvo para ela.
-Revise dados e paginação antes de imprimir ou assinar. Não há assinatura automática.
-A renderização no navegador pode variar em relação ao Microsoft Word; não há promessa de equivalência exata entre navegadores.
-Arquivos privados não fazem parte do repositório público nem deste código-fonte.
+V22: fluxo substituído por layout fixo do PDF aprovado. Veja README.md, seção Contratos V22. O selo deve ser importado e salvo por moto.
