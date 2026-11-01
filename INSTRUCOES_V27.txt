@@ -1,0 +1,10 @@
+CADASTRO V27
+1. ANTES de publicar: execute backend/v27-seal-visibility.sql no Supabase correto do site CADASTRO. Faça backup antes.
+2. O campo selo_number é texto para preservar zeros à esquerda. A geração do contrato usa esse número e somente pede a data.
+3. Ocultar usa visibility_status=hidden e mantém o registro na ADM.
+4. Em Meus Cadastros, a foto é obtida da moto correspondente quando o RPC retorna motorcycle_id, ou pelo modelo/ano como alternativa. Se a moto for excluída ou não corresponder, aparece o ícone de reserva.
+5. O PDF ainda depende do layout v22 já configurado no Supabase e dos anexos existentes; verificar o resultado final manualmente.
+6. Testes reais de Supabase, iPhone e Android não foram executados neste ambiente.
+7. Esta atualização não publica automaticamente nem altera o banco existente.
+8. Publique a função website-gateway atualizada para bloquear pedidos de motos ocultas.
+9. O SQL de cadastro anterior continua exigindo available=true; ocultas ficam available=false.

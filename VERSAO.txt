@@ -1,2 +1,1 @@
-CADASTRO — VERSÃO 26
-Anexos da moto exibem confirmação persistente de arquivo salvo ao reabrir a edição.
+CADASTRO V27 — Alterações de selo, ocultação, tela de sucesso e foto em Meus Cadastros.
