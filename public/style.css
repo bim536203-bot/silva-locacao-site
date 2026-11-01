@@ -112,3 +112,5 @@ body:has(#admin:not(.hidden)) .floating-admin-lock,body:has(#customer:not(.hidde
 @media(prefers-reduced-motion:reduce){.submission-spinner{animation:none;border-color:#079b45 #cee8d4 #cee8d4}}
 
 #contract-options .field{margin:20px 0;gap:8px}#contract-options .field input{display:block;min-width:0;max-width:100%;min-height:48px}#contract-options .field label{display:block}
+
+.saved-file-picker{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #ddd;border-radius:9px;padding:10px}.saved-file-picker input[hidden]{display:none!important}.saved-file-status{font-size:13px;color:#247443;overflow-wrap:anywhere;flex:1;min-width:140px}.saved-file-picker .mini{flex:none;margin:0}

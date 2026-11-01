@@ -1,2 +1,2 @@
-CADASTRO — VERSÃO 25
-Faixa amarela do cabeçalho cobre o número completo do contrato em todas as páginas.
+CADASTRO — VERSÃO 26
+Anexos da moto exibem confirmação persistente de arquivo salvo ao reabrir a edição.
