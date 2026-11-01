@@ -31,3 +31,7 @@ Testes V22: geração real no navegador com dados fictícios, base de quatro pá
 ## Contratos V23
 
 A janela solicita somente número do contrato e data de início, em campos separados verticalmente. Registro CNH e CEP deixaram de ser exigidos e preenchidos; suas legendas foram ocultadas na base fixa sem alterar as bordas da tabela.
+
+## Contratos V24
+
+Tabela do locatário reorganizada conforme FERNANDO moto VERMELHA: nome completo em toda a linha; nascimento e CPF lado a lado; endereço em toda a linha; bairro e telefone lado a lado; parentes e e-mail nas três linhas seguintes. As proporções das colunas seguem a tabela do novo Word. Mantém o contorno e a área da foto da base aprovada. Não exige registro CNH nem CEP.

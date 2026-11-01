@@ -1,2 +1,2 @@
-CADASTRO — VERSÃO 23
-Geração de contrato: apenas número e data, com campos separados. Registro CNH e CEP removidos.
+CADASTRO — VERSÃO 24
+Tabela do locatário atualizada conforme novo Word, com todos os dados preenchidos do cadastro.

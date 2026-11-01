@@ -57,21 +57,33 @@ export async function fillFixedLayout(pdf,{bike,application:a,details,vehicle,fa
  const stamps=[[429.22,723.77,145.21,73.1],[430.27,724.72,145.21,73.1],[429.02,539.67,145.21,73.1],[429.52,667.27,145.21,73.1]];
  for(let i=0;i<4;i++){const [x,top,size]=[[482.62,37.77,9],[471.7,29.28,11.04],[470.26,30.72,11.04],[471.82,31.08,11.04]][i];line(pages[i],'CONTRATO Nº '+details.number,x,top,98,size,font);await picture(pages[i],sealBytes,stamps[i]);}
  const p=pages[1];
- // Removed fields: retain the table borders and blank their labels in the fixed base.
- p.drawRectangle({x:159,y:p.getHeight()-458,width:155,height:14,color:PDFLib.rgb(1,1,1)});
- p.drawRectangle({x:39,y:p.getHeight()-535,width:25,height:14,color:PDFLib.rgb(1,1,1)});
  line(p,bike.model,61.1,126.9,135);line(p,String(bike.year),203.2,126.9,48);
  line(p,vehicle.COR,61.1,164,73);line(p,vehicle.PLACA,143.1,164,100);
  line(p,vehicle.RENAVAM,61.1,207.5,185);line(p,vehicle.CHASSI,61.1,247.3,185);
  await picture(p,bikeBytes,[259,112,277,194]);
  const cpf=String(a.cpf).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
  const birth=a.birth_date.split('-').reverse().join('/');
- line(p,a.full_name,41.4,423.2,218);line(p,cpf,266.1,423.2,98);
- line(p,birth,41.4,460.6,110);
- line(p,[a.address,a.house_number].filter(Boolean).join(', '),41.4,498.9,218);line(p,a.neighborhood,266.1,498.8,98);
- line(p,a.phone,195.5,536.7,168);
- for(const [n,top] of [[1,572.1],[2,599.5]])line(p,`(${a['relative_'+n+'_relation']} – ${a['relative_'+n+'_name']})  ${a['relative_'+n+'_phone']}`,39.7,top,322,9);
- line(p,a.email,39.7,629.3,322);await picture(p,faceBytes,[379.89,425.4,148.8,198.4]);
+ // Client grid follows the updated Word: merged name/address rows, CPF beside birth,
+ // neighborhood beside phone. Keep the approved outer table and portrait positions.
+ const left=36.72,right=369.2,top=407.13,bottom=649.78;
+ p.drawRectangle({x:left-.5,y:p.getHeight()-bottom-.5,width:right-left+1,height:bottom-top+1,color:PDFLib.rgb(1,1,1)});
+ const rows=[
+  [['NOME COMPLETO:',a.full_name,1]],
+  [['DATA DE NASCIMENTO:',birth,3397/6668],['CPF:',cpf,3271/6668]],
+  [['ENDEREÇO:',[a.address,a.house_number].filter(Boolean).join(', '),1]],
+  [['BAIRRO:',a.neighborhood,3114/6668],['CONTATO PRINCIPAL:',a.phone,3554/6668]],
+  [['CONTATO PARENTE PRÓXIMO 01:',`(${a.relative_1_relation} – ${a.relative_1_name})  ${a.relative_1_phone}`,1]],
+  [['CONTATO PARENTE PRÓXIMO 02:',`(${a.relative_2_relation} – ${a.relative_2_name})  ${a.relative_2_phone}`,1]],
+  [['E-MAIL:',a.email,1]]
+ ];
+ const weights=[27.85,34.05,37.35,34.95,28,29.2,27.5],total=weights.reduce((a,b)=>a+b,0);
+ const rule=(x1,y1,x2,y2)=>p.drawLine({start:{x:x1,y:p.getHeight()-y1},end:{x:x2,y:p.getHeight()-y2},thickness:.5,color:PDFLib.rgb(0,0,0)});
+ let y=top;rule(left,top,right,top);rule(left,top,left,bottom);rule(right,top,right,bottom);
+ rows.forEach((cells,i)=>{const height=weights[i]/total*(bottom-top);let x=left;
+  cells.forEach(([label,value,fraction],j)=>{const width=fraction*(right-left);if(j)rule(x,y,x,y+height);line(p,label,x+3.5,y+3,width-7,10,bold);line(p,value,x+3.5,y+17,width-7,10);x+=width;});
+  y+=height;rule(left,y,right,y);
+ });
+ await picture(p,faceBytes,[379.89,425.4,148.8,198.4]);
  // Keep the signature line at the approved location; never carry a prior tenant's signature.
  line(pages[3],'Assinatura do locatário '+a.full_name+':',37.7,581.8,190,8,serif);
  pages[3].drawLine({start:{x:230,y:pages[3].getHeight()-591},end:{x:407,y:pages[3].getHeight()-591},thickness:.5,color:PDFLib.rgb(0,0,0)});
