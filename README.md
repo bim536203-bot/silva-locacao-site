@@ -27,3 +27,7 @@ A ADM importa um selo PNG/JPG por moto, no mesmo armazenamento privado dos anexo
 A foto fica na tabela, sem página separada; CNH e documento do veículo são anexados em seguida. Assinaturas de locatários anteriores e seus dados foram removidos da base. A assinatura do locador, já existente no modelo aprovado, permanece. Não cria assinatura do cliente.
 
 Testes V22: geração real no navegador com dados fictícios, base de quatro páginas, CNH anexa, posição da foto, upload privado de selo e autorização da base (admin permitido, demais usuários e anônimos bloqueados). Nenhum aparelho físico foi testado.
+
+## Contratos V23
+
+A janela solicita somente número do contrato e data de início, em campos separados verticalmente. Registro CNH e CEP deixaram de ser exigidos e preenchidos; suas legendas foram ocultadas na base fixa sem alterar as bordas da tabela.

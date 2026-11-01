@@ -25,7 +25,7 @@ const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
 export function fillTemplateXml(xml,a,details,parser=DOMParser,serializer=XMLSerializer){
  const doc=new parser().parseFromString(xml,'application/xml');if(doc.getElementsByTagName('parsererror').length)throw new Error('Modelo Word inválido.');
  const birth=/^\d{4}-\d{2}-\d{2}$/.test(a.birth_date||'')?a.birth_date.split('-').reverse().join('/'):(a.birth_date||'');
- const values=[['NOME COMPLETO:',a.full_name],['CPF:',a.cpf],['DATA DE NASCIMENTO:',birth],['NÚMERO DO REGISTRO DA CNH:',details.cnhRegistration||''],['ENDEREÇO:',[a.address,a.house_number&&'nº '+a.house_number].filter(Boolean).join(', ')],['BAIRRO:',a.neighborhood],['CONTATO PRINCIPAL:',a.phone],['CONTATO PARENTE PRÓXIMO 01:',[a.relative_1_name,a.relative_1_phone,a.relative_1_relation].filter(Boolean).join(' — ')],['CONTATO PARENTE PRÓXIMO 02:',[a.relative_2_name,a.relative_2_phone,a.relative_2_relation].filter(Boolean).join(' — ')],['E-MAIL:',a.email]];
+ const values=[['NOME COMPLETO:',a.full_name],['CPF:',a.cpf],['DATA DE NASCIMENTO:',birth],['ENDEREÇO:',[a.address,a.house_number&&'nº '+a.house_number].filter(Boolean).join(', ')],['BAIRRO:',a.neighborhood],['CONTATO PRINCIPAL:',a.phone],['CONTATO PARENTE PRÓXIMO 01:',[a.relative_1_name,a.relative_1_phone,a.relative_1_relation].filter(Boolean).join(' — ')],['CONTATO PARENTE PRÓXIMO 02:',[a.relative_2_name,a.relative_2_phone,a.relative_2_relation].filter(Boolean).join(' — ')],['E-MAIL:',a.email]];
  const cells=[...doc.getElementsByTagNameNS(W,'tc')];let matched=0;
  for(const cell of cells){const text=[...cell.getElementsByTagNameNS(W,'t')].map(x=>x.textContent).join('');const pair=values.find(([label])=>normalize(text).startsWith(normalize(label)));if(!pair)continue;
  const [label,value]=pair;if(!value&&label!=='NÚMERO DO REGISTRO DA CNH:')throw new Error('Complete o campo '+label+' no cadastro antes de gerar o contrato.');
@@ -57,6 +57,9 @@ export async function fillFixedLayout(pdf,{bike,application:a,details,vehicle,fa
  const stamps=[[429.22,723.77,145.21,73.1],[430.27,724.72,145.21,73.1],[429.02,539.67,145.21,73.1],[429.52,667.27,145.21,73.1]];
  for(let i=0;i<4;i++){const [x,top,size]=[[482.62,37.77,9],[471.7,29.28,11.04],[470.26,30.72,11.04],[471.82,31.08,11.04]][i];line(pages[i],'CONTRATO Nº '+details.number,x,top,98,size,font);await picture(pages[i],sealBytes,stamps[i]);}
  const p=pages[1];
+ // Removed fields: retain the table borders and blank their labels in the fixed base.
+ p.drawRectangle({x:159,y:p.getHeight()-458,width:155,height:14,color:PDFLib.rgb(1,1,1)});
+ p.drawRectangle({x:39,y:p.getHeight()-535,width:25,height:14,color:PDFLib.rgb(1,1,1)});
  line(p,bike.model,61.1,126.9,135);line(p,String(bike.year),203.2,126.9,48);
  line(p,vehicle.COR,61.1,164,73);line(p,vehicle.PLACA,143.1,164,100);
  line(p,vehicle.RENAVAM,61.1,207.5,185);line(p,vehicle.CHASSI,61.1,247.3,185);
@@ -64,9 +67,9 @@ export async function fillFixedLayout(pdf,{bike,application:a,details,vehicle,fa
  const cpf=String(a.cpf).replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4');
  const birth=a.birth_date.split('-').reverse().join('/');
  line(p,a.full_name,41.4,423.2,218);line(p,cpf,266.1,423.2,98);
- line(p,birth,41.4,460.6,110);line(p,details.cnhRegistration,179.7,459.5,180);
+ line(p,birth,41.4,460.6,110);
  line(p,[a.address,a.house_number].filter(Boolean).join(', '),41.4,498.9,218);line(p,a.neighborhood,266.1,498.8,98);
- line(p,details.cep,39.7,536.7,145);line(p,a.phone,195.5,536.7,168);
+ line(p,a.phone,195.5,536.7,168);
  for(const [n,top] of [[1,572.1],[2,599.5]])line(p,`(${a['relative_'+n+'_relation']} – ${a['relative_'+n+'_name']})  ${a['relative_'+n+'_phone']}`,39.7,top,322,9);
  line(p,a.email,39.7,629.3,322);await picture(p,faceBytes,[379.89,425.4,148.8,198.4]);
  // Keep the signature line at the approved location; never carry a prior tenant's signature.
@@ -81,7 +84,7 @@ export async function generateContract({db,bike,application,docs,gateway,details
  if(!bike?.contract_template_path)throw new Error('Anexe e salve o modelo Word nesta moto primeiro.');
  if(!bike.contract_seal_path)throw new Error('Importe e salve a imagem do selo no cadastro desta moto.');
  if(!bike.photos?.length)throw new Error('Cadastre uma foto desta moto.');
- if(!details.number?.trim()||!/^\d{4}-\d{2}-\d{2}$/.test(details.startDate)||!details.cnhRegistration?.trim()||!/^\d{5}-?\d{3}$/.test(details.cep||''))throw new Error('Informe o número do contrato, a data, o registro da CNH e o CEP.');
+ if(!details.number?.trim()||!/^\d{4}-\d{2}-\d{2}$/.test(details.startDate))throw new Error('Informe o número do contrato e a data de início.');
  for(const key of ['full_name','cpf','birth_date','phone','email','address','house_number','neighborhood','relative_1_name','relative_1_phone','relative_1_relation','relative_2_name','relative_2_phone','relative_2_relation'])if(!application[key])throw new Error('Complete os dados do cliente antes de gerar o contrato.');
  await libs();
  const [template,seal,layout]=await Promise.all([download(db,bike.contract_template_path),download(db,bike.contract_seal_path),db.rpc('website_contract_layout')]);

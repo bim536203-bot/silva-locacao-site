@@ -110,3 +110,5 @@ body:has(#admin:not(.hidden)) .floating-admin-lock,body:has(#customer:not(.hidde
 .submission-spinner{display:block;width:48px;height:48px;margin:auto;border:6px solid #cee8d4;border-top-color:#079b45;border-radius:50%;animation:submission-spin .85s linear infinite}
 @keyframes submission-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.submission-spinner{animation:none;border-color:#079b45 #cee8d4 #cee8d4}}
+
+#contract-options .field{margin:20px 0;gap:8px}#contract-options .field input{display:block;min-width:0;max-width:100%;min-height:48px}#contract-options .field label{display:block}

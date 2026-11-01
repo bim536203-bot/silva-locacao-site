@@ -1,2 +1,2 @@
-CADASTRO — VERSÃO 22
-Contrato com layout fixo do PDF aprovado, foto na tabela e selo privado por moto.
+CADASTRO — VERSÃO 23
+Geração de contrato: apenas número e data, com campos separados. Registro CNH e CEP removidos.
