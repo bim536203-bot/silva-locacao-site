@@ -55,7 +55,16 @@ export async function fillFixedLayout(pdf,{bike,application:a,details,vehicle,fa
  async function picture(page,bytes,box){if(!imageCache.has(bytes))imageCache.set(bytes,bytes[0]===137?await pdf.embedPng(bytes):await pdf.embedJpg(bytes));const image=imageCache.get(bytes);const [x,top,w,h]=box,fit=image.scaleToFit(w,h);page.drawImage(image,{x:x+(w-fit.width)/2,y:page.getHeight()-top-h+(h-fit.height)/2,width:fit.width,height:fit.height});}
  // Original stamp rectangles and header positions are preserved on each contract page.
  const stamps=[[429.22,723.77,145.21,73.1],[430.27,724.72,145.21,73.1],[429.02,539.67,145.21,73.1],[429.52,667.27,145.21,73.1]];
- for(let i=0;i<4;i++){const [x,top,size]=[[482.62,37.77,9],[471.7,29.28,11.04],[470.26,30.72,11.04],[471.82,31.08,11.04]][i];line(pages[i],'CONTRATO Nº '+details.number,x,top,98,size,font);await picture(pages[i],sealBytes,stamps[i]);}
+ for(let i=0;i<4;i++){
+  const [originalX,top,originalSize]=[[482.62,37.77,9],[471.7,29.28,11.04],[470.26,30.72,11.04],[471.82,31.08,11.04]][i];
+  const title='CONTRATO Nº '+cleanText(details.number);let size=originalSize;
+  while(font.widthOfTextAtSize(title,size)>164&&size>6)size-=.1;
+  const width=font.widthOfTextAtSize(title,size);if(width>164)throw new Error('O número do contrato é longo demais.');
+  const x=Math.min(originalX,568-width),left=x-3;
+  pages[i].drawRectangle({x:left,y:pages[i].getHeight()-top-originalSize-4,width:571-left,height:originalSize+6,color:PDFLib.rgb(1,1,0)});
+  line(pages[i],title,x,top,164,size,font);
+  await picture(pages[i],sealBytes,stamps[i]);
+ }
  const p=pages[1];
  line(p,bike.model,61.1,126.9,135);line(p,String(bike.year),203.2,126.9,48);
  line(p,vehicle.COR,61.1,164,73);line(p,vehicle.PLACA,143.1,164,100);
