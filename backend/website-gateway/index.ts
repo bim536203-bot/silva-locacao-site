@@ -42,10 +42,10 @@ Deno.serve(async req=>{
  await verifyCnh(cnh.bytes,data.full_name,data.cpf,data.birth_date);
  return result({receipt:await issueReceipt(secret,cnh.bytes,data)});
  }
- const extraKeys=['email','relative_1_name','relative_1_phone','relative_1_relation','relative_2_name','relative_2_phone','relative_2_relation'] as const;
+ const extraKeys=['address','house_number','email','relative_1_name','relative_1_phone','relative_1_relation','relative_2_name','relative_2_phone','relative_2_relation'] as const;
  if(extraKeys.some(key=>form.has(key))){
  const extras=Object.fromEntries(extraKeys.map(key=>[key,String(form.get(key)||'').trim()]));
- assert(extras.email.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(extras.email),'Informe um e-mail válido.');
+ assert(extras.address.length>=3&&extras.address.length<=200&&extras.house_number.length>=1&&extras.house_number.length<=20,'Informe endereço e número da casa.');assert(extras.email.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(extras.email),'Informe um e-mail válido.');
  for(const n of [1,2]){
  const name=extras[`relative_${n}_name`],phone=extras[`relative_${n}_phone`].replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,''),relation=extras[`relative_${n}_relation`];
  if(name.length<2||name.length>150)throw new VerificationError('Informe o nome do '+n+'º parente.','relative_'+n+'_name');

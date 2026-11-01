@@ -1,9 +1,4 @@
-CADASTRO — VERSÃO 18
-Preserva funcionalidades da V17 e links existentes.
-Leitura da CNH combina extração textual, imagem nativa e página do mesmo documento quando os campos são complementares.
-Corrige seleção de nome: sobrenomes com NASCIMENTO não são descartados como rótulos; rótulos de identidade não são usados como nome.
-Datas de nascimento identificadas pelo rótulo do campo, sem confundir sobrenomes.
-Falha inconclusiva da conferência antecipada permite nova tentativa no envio final.
-Verificação real de leitura dos dois PDFs fornecidos: correspondência confirmada em ambos, sem criar cadastros ou armazenar documentos.
-Testes de regressão sintéticos: divergências de CPF, nome e nascimento; campos conflitantes; formato já legível; leituras complementares.
-Nenhum PDF de cliente ou dado pessoal incluído neste repositório.
+CADASTRO — VERSÃO 19 PARCIAL
+Endereço e número da casa no formulário e na ADM, com persistência no Supabase.
+Preserva a leitura de CNH e as funções da V18.
+Anexos por moto e geração de contratos ainda não disponíveis; veja PENDENCIAS_CONTRATO_V19.txt.

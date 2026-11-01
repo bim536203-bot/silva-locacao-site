@@ -1,0 +1,15 @@
+VERSÃO 19 — IMPLEMENTAÇÃO PARCIAL (NÃO PUBLICAR COMO DEFINITIVA)
+
+Incluído no frontend: Endereço e Número da casa no formulário; visualização na ADM; ícone de PDF na página de detalhes; campos de seleção de Word e documento da moto.
+Incluído no gateway: validação dos campos de endereço.
+
+AINDA NÃO IMPLEMENTADO:
+1. CONCLUÍDO NA PUBLICAÇÃO: website_finalize grava address e house_number.
+2. Armazenamento privado e seguro dos arquivos Word/PDF por moto, com upload autenticado.
+3. Serviço de preenchimento do DOCX e conversão fiel para PDF, com incorporação da foto, CNH e documento da moto.
+4. Endpoint autenticado que gere o contrato APENAS no clique do administrador e devolva PDF para visualização/download.
+5. Testes reais de ponta a ponta no Supabase, navegador móvel e desktop.
+
+Para evitar falsa confirmação, anexos novos são BLOQUEADOS com mensagem explicativa e o botão de PDF informa que o serviço ainda não foi configurado. Nenhum contrato é fabricado nem marcado como gerado.
+
+NÃO usar o PDF de exemplo como contrato de outro cliente, nem copiar dados pessoais do exemplo.
