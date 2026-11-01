@@ -1,4 +1,3 @@
-CADASTRO — VERSÃO 19 PARCIAL
-Endereço e número da casa no formulário e na ADM, com persistência no Supabase.
-Preserva a leitura de CNH e as funções da V18.
-Anexos por moto e geração de contratos ainda não disponíveis; veja PENDENCIAS_CONTRATO_V19.txt.
+CADASTRO — VERSÃO 20
+Campo Bairro obrigatório no formulário e visível na ADM, com persistência no Supabase.
+Preserva a versão 19. Geração de contratos continua pendente.
