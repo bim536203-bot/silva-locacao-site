@@ -1,1 +1,2 @@
-CADASTRO V27 — Alterações de selo, ocultação, tela de sucesso e foto em Meus Cadastros.
+CADASTRO — VERSÃO 28
+Câmera retangular, remoção local de fundo e aplicação manual da assinatura ao PDF.

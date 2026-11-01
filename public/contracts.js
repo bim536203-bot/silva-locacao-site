@@ -101,7 +101,7 @@ export async function fillFixedLayout(pdf,{bike,application:a,details,vehicle,fa
  const money=n=>'R$'+Number(n).toFixed(2).replace('.',',');
  for(const [key,x,top] of [['weekly_price',228.18,192.26],['deposit',420.16,105.98],['deposit',196.75,213.74]])line(pages[3],money(bike[key]),x,top,42.1,10,serif);
 }
-export async function generateContract({db,bike,application,docs,gateway,details}){
+export async function generateContract({db,bike,application,docs,gateway,details,signature=null}){
  if(!bike?.contract_template_path)throw new Error('Anexe e salve o modelo Word nesta moto primeiro.');
  if(!bike.contract_seal_path)throw new Error('Importe e salve a imagem do selo no cadastro desta moto.');
  if(!bike.photos?.length)throw new Error('Cadastre uma foto desta moto.');
@@ -117,6 +117,7 @@ export async function generateContract({db,bike,application,docs,gateway,details
  const [faceResponse,cnhResponse]=await Promise.all([gateway('document',{document_id:face.id,action:'view'},true),gateway('document',{document_id:cnh.id,action:'view'},true)]);
  const pdf=await PDFLib.PDFDocument.load(Uint8Array.from(atob(layout.data),c=>c.charCodeAt(0)));
  await fillFixedLayout(pdf,{bike,application,details,vehicle,faceBytes:new Uint8Array(await faceResponse.arrayBuffer()),sealBytes:new Uint8Array(await seal.arrayBuffer()),bikeBytes:new Uint8Array(await photo.data.arrayBuffer())});
+ if(signature){const bytes=new Uint8Array(await signature.arrayBuffer());if(bytes.length>8*1024*1024)throw new Error('Imagem da assinatura muito grande.');const image=await pdf.embedPng(bytes),page=pdf.getPages()[3],fit=image.scaleToFit(174,48);page.drawImage(image,{x:230+(174-fit.width)/2,y:page.getHeight()-591-8,width:fit.width,height:fit.height});}
  await appendPdfOrImage(pdf,await cnhResponse.blob());if(bike.vehicle_document_path)await appendPdfOrImage(pdf,await download(db,bike.vehicle_document_path));
  return new Blob([await pdf.save()],{type:'application/pdf'});
 }
