@@ -1,1 +1,1 @@
-CADASTRO V32 — Compartilhar PDF envia apenas o arquivo com nome, sem texto nem link blob.
+CADASTRO V33 — Barra superior do navegador em azul-escuro (#07549B) em todas as telas, incluindo ADM. Sem inclusão do logotipo gov.br.

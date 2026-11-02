@@ -48,3 +48,8 @@ Assinar abre o seletor de imagem e prepara a prévia na quarta página, centrada
 
 ## V32
 Compartilhar PDF usa Web Share com somente files, sem url, text ou title. O nome do File mantém primeiro nome e indicação de assinado. Baixar PDF permanece disponível; o menu de compartilhamento do navegador pode incluir a URL e não é controlado pelo site.
+
+## V33
+- Cor de tema do navegador alterada de #b91c1c para #07549B no index.html e manifest.webmanifest.
+- Aplicável a todas as telas da aplicação, inclusive Área ADM, pois compartilham a mesma página.
+- Logo SILVA Locação preservado; logo gov.br não incluído.
