@@ -1,2 +1,1 @@
-CADASTRO — VERSÃO 28
-Câmera retangular, remoção local de fundo e aplicação manual da assinatura ao PDF.
+V29 — Botões do contrato retangulares e empilhados. Seleção da assinatura pela galeria, sem abrir câmera. Remoção local do fundo e confirmação preservadas.
