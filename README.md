@@ -42,3 +42,6 @@ Na ADM, os botões de assinar e gerar contrato são retangulares e ficam um abai
 
 ## V30 — posição da assinatura
 Assinar abre o seletor de imagem e prepara a prévia na quarta página, centrada na linha do locatário. Permite arrastar por toque/mouse, mover pelas setas e alterar o tamanho proporcionalmente por controle deslizante. Confirmar aplica as coordenadas em pontos do PDF ao arquivo completo, mantendo os anexos. Cancelar descarta a imagem. A prévia começa com a data atual de Boa Vista e mantém um campo para alterar a data de início; quando alterada, o contrato é atualizado antes da confirmação.
+
+## V31
+Ícone de copiar à direita de Assinar contrato copia somente o texto solicitado. PDFs baixados usam CONTRATO PrimeiroNome.pdf e CONTRATO PrimeiroNome assinado.pdf.

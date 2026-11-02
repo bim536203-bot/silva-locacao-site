@@ -1,1 +1,1 @@
-CADASTRO V30 — Prévia na página de assinatura, arrastar e redimensionar antes de confirmar. Texto informativo removido.
+CADASTRO V31 — Ícone para copiar o texto da assinatura e nomes dos PDFs com o nome do cliente e indicação assinado.
