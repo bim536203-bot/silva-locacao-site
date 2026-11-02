@@ -39,3 +39,6 @@ Tabela do locatário reorganizada conforme FERNANDO moto VERMELHA: nome completo
 ## V29 — assinatura pela galeria
 
 Na ADM, os botões de assinar e gerar contrato são retangulares e ficam um abaixo do outro. Assinar contrato abre o seletor de imagens do aparelho, sem solicitar acesso à câmera. A prévia permite conferir a máscara de transparência e ajustar a remoção de fundo, preservando as cores dos traços. A imagem permanece em memória e só é aplicada ao PDF após confirmação. A posição na quarta página permanece fixa sobre a linha do locatário; não há editor de posição ou tamanho nesta versão.
+
+## V30 — posição da assinatura
+Assinar abre o seletor de imagem e prepara a prévia na quarta página, centrada na linha do locatário. Permite arrastar por toque/mouse, mover pelas setas e alterar o tamanho proporcionalmente por controle deslizante. Confirmar aplica as coordenadas em pontos do PDF ao arquivo completo, mantendo os anexos. Cancelar descarta a imagem. A prévia começa com a data atual de Boa Vista e mantém um campo para alterar a data de início; quando alterada, o contrato é atualizado antes da confirmação.

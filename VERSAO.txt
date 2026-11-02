@@ -1,1 +1,1 @@
-V29 — Botões do contrato retangulares e empilhados. Seleção da assinatura pela galeria, sem abrir câmera. Remoção local do fundo e confirmação preservadas.
+CADASTRO V30 — Prévia na página de assinatura, arrastar e redimensionar antes de confirmar. Texto informativo removido.
