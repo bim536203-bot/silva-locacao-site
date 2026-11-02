@@ -1,1 +1,1 @@
-CADASTRO V31 — Ícone para copiar o texto da assinatura e nomes dos PDFs com o nome do cliente e indicação assinado.
+CADASTRO V32 — Compartilhar PDF envia apenas o arquivo com nome, sem texto nem link blob.

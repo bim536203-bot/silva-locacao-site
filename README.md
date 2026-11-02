@@ -45,3 +45,6 @@ Assinar abre o seletor de imagem e prepara a prévia na quarta página, centrada
 
 ## V31
 Ícone de copiar à direita de Assinar contrato copia somente o texto solicitado. PDFs baixados usam CONTRATO PrimeiroNome.pdf e CONTRATO PrimeiroNome assinado.pdf.
+
+## V32
+Compartilhar PDF usa Web Share com somente files, sem url, text ou title. O nome do File mantém primeiro nome e indicação de assinado. Baixar PDF permanece disponível; o menu de compartilhamento do navegador pode incluir a URL e não é controlado pelo site.
