@@ -1,1 +1,1 @@
-CADASTRO V33 — Barra superior do navegador em azul-escuro (#07549B) em todas as telas, incluindo ADM. Sem inclusão do logotipo gov.br.
+CADASTRO V34 — Leitura dos arquivos antes do upload e orientação clara para falhas de comunicação.

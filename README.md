@@ -53,3 +53,6 @@ Compartilhar PDF usa Web Share com somente files, sem url, text ou title. O nome
 - Cor de tema do navegador alterada de #b91c1c para #07549B no index.html e manifest.webmanifest.
 - Aplicável a todas as telas da aplicação, inclusive Área ADM, pois compartilham a mesma página.
 - Logo SILVA Locação preservado; logo gov.br não incluído.
+
+## V34
+FormData recebe cópias dos bytes dos arquivos antes de iniciar fetch, evitando depender de um arquivo móvel inacessível durante o upload. Falhas locais de leitura identificam o anexo e pedem nova seleção. Falhas de transporte preservam o formulário e orientam conferir o cadastro antes de reenviar; não há repetição automática de submit, pois uma resposta perdida não comprova que o servidor deixou de salvar. Causa do incidente original não confirmada pelos registros disponíveis.
