@@ -56,3 +56,6 @@ Compartilhar PDF usa Web Share com somente files, sem url, text ou title. O nome
 
 ## V34
 FormData recebe cópias dos bytes dos arquivos antes de iniciar fetch, evitando depender de um arquivo móvel inacessível durante o upload. Falhas locais de leitura identificam o anexo e pedem nova seleção. Falhas de transporte preservam o formulário e orientam conferir o cadastro antes de reenviar; não há repetição automática de submit, pois uma resposta perdida não comprova que o servidor deixou de salvar. Causa do incidente original não confirmada pelos registros disponíveis.
+
+## V35
+Botão com modelo da moto no detalhe do cadastro. Seletor administrativo lista todas as motos, sem filtrar disponibilidade/visibilidade. Alteração persistida com condição no vínculo anterior para detectar edição concorrente; reabre o detalhe e contratos usam a nova moto. Necessita grant restrito a motorcycle_id conforme backend/v35-application-bike.sql; RLS permanece admin-only.
