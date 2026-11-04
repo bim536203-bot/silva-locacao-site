@@ -59,3 +59,13 @@ FormData recebe cópias dos bytes dos arquivos antes de iniciar fetch, evitando 
 
 ## V35
 Botão com modelo da moto no detalhe do cadastro. Seletor administrativo lista todas as motos, sem filtrar disponibilidade/visibilidade. Alteração persistida com condição no vínculo anterior para detectar edição concorrente; reabre o detalhe e contratos usam a nova moto. Necessita grant restrito a motorcycle_id conforme backend/v35-application-bike.sql; RLS permanece admin-only.
+
+
+## Versão 37 — Selos
+- Executar `backend/v37-seals.sql` no projeto Supabase antes da publicação.
+- Nova aba SELOS: cadastrar imagem PNG/JPG até 5MB, número com zeros à esquerda, visualizar e excluir com confirmação.
+- Cadastro/edição de motos sem campos de selo; dados legados preservados.
+- Geração de PDF exige escolher selo da lista, usando sua imagem e número.
+- Assinatura: escolher imagem, selecionar selo e salvar antes de ajustar assinatura.
+- Notificações: somente os três botões; push mantido.
+- Não foram realizadas migrações ou publicação remota automaticamente.

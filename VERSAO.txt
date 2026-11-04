@@ -1,1 +1,1 @@
-CADASTRO V35 — Seleção da moto do cadastro pela ADM, incluindo ocultas e indisponíveis; proteção de leitura dos anexos e mensagem clara de falha de comunicação.
+CADASTRO V37 — SELOS, SELEÇÃO NO PDF/ASSINATURA, NOTIFICAÇÕES SIMPLIFICADAS

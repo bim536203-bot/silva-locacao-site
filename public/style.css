@@ -137,3 +137,9 @@ body:has(#admin:not(.hidden)) .floating-admin-lock,body:has(#customer:not(.hidde
 .signature-button-row{display:flex;align-items:stretch;gap:12px;width:100%}.signature-button-row>#sign-contract{flex:1;min-width:0;height:auto;min-height:52px;padding:15px 12px;border-radius:10px;line-height:1.35}.signature-button-row>.copy-signature-prompt{flex:0 0 52px;width:52px;min-width:52px;min-height:52px;padding:12px;display:flex;align-items:center;justify-content:center;border-radius:10px}
 
 .application-bike-button{display:block;width:100%;margin:0 0 20px;padding:15px}.application-bike-list{display:flex;flex-direction:column;gap:10px;max-height:55dvh;overflow:auto;padding:2px}.application-bike-list .bike-selection{width:100%;flex:none;text-align:left;padding:15px;font-size:16px}.bike-selection[aria-pressed="true"]{outline:2px solid #07549b;background:#e7f1fb}
+/* V37 — administração dos selos */
+.seal-card{display:flex;align-items:center;gap:14px;min-width:0;margin:12px 0;border:1px solid #e5e5e5;border-radius:15px;padding:12px;background:#fff}
+.seal-card img{width:44%;max-width:210px;aspect-ratio:2/1;object-fit:contain;border-radius:6px;background:#f7f7f7}
+.seal-card strong{flex:1;min-width:0;overflow-wrap:anywhere}
+.seal-card .danger{color:#d2222b;border-color:#f0a1a4}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

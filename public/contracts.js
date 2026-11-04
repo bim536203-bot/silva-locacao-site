@@ -103,12 +103,12 @@ export async function fillFixedLayout(pdf,{bike,application:a,details,vehicle,fa
 }
 export async function generateContract({db,bike,application,docs,gateway,details,signature=null}){
  if(!bike?.contract_template_path)throw new Error('Anexe e salve o modelo Word nesta moto primeiro.');
- if(!bike.contract_seal_path)throw new Error('Importe e salve a imagem do selo no cadastro desta moto.');
+ if(!details.sealPath)throw new Error('Selecione um selo cadastrado antes de gerar o contrato.');
  if(!bike.photos?.length)throw new Error('Cadastre uma foto desta moto.');
  if(!details.number?.trim()||!/^\d{4}-\d{2}-\d{2}$/.test(details.startDate))throw new Error('Informe o número do contrato e a data de início.');
  for(const key of ['full_name','cpf','birth_date','phone','email','address','house_number','neighborhood','relative_1_name','relative_1_phone','relative_1_relation','relative_2_name','relative_2_phone','relative_2_relation'])if(!application[key])throw new Error('Complete os dados do cliente antes de gerar o contrato.');
  await libs();
- const [template,seal,layout]=await Promise.all([download(db,bike.contract_template_path),download(db,bike.contract_seal_path),db.rpc('website_contract_layout')]);
+ const [template,seal,layout]=await Promise.all([download(db,bike.contract_template_path),download(db,details.sealPath),db.rpc('website_contract_layout')]);
  if(layout.error||!layout.data)throw new Error('Modelo de contrato indisponível. Entre novamente na ADM.');
  const zip=await JSZip.loadAsync(template);const vehicle=vehicleFromWord(await zip.file('word/document.xml').async('string'));
  if(String(vehicle.ANO)!==String(bike.year))throw new Error('O ano no Word é diferente do ano desta moto. Atualize o modelo Word antes de gerar.');
