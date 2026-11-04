@@ -69,3 +69,6 @@ Botão com modelo da moto no detalhe do cadastro. Seletor administrativo lista t
 - Assinatura: escolher imagem, selecionar selo e salvar antes de ajustar assinatura.
 - Notificações: somente os três botões; push mantido.
 - Não foram realizadas migrações ou publicação remota automaticamente.
+
+## V39 — descrição opcional
+O cadastro e a edição da moto permitem descrição vazia. No catálogo, aparece somente em cinza discreto no canto superior esquerdo do cartão. Toda identificação da moto na ADM (lista de motos, lista de cadastros, detalhes, botão de moto e seletor) usa modelo, ano e descrição, sem separador quando vazia. Campo description já existente; nenhuma migração.

@@ -1,0 +1,1 @@
+export function motorcycleLabel(bike,fallback='Moto não encontrada'){if(!bike)return fallback;return [bike.model,bike.year,String(bike.description||'').trim()].filter(value=>value!==undefined&&value!==null&&String(value).trim()!=='').join(' • ');}
