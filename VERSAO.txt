@@ -1,1 +1,1 @@
-CADASTRO V39 — Descrição opcional das motos; texto discreto no canto do catálogo e identificação completa em toda a ADM.
+CADASTRO V40 — Tela inicial clara conforme referência: título leve, cartões com divisória e sombra, descrição discreta e botões verdes/cinza.
