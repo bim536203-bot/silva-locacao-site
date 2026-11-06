@@ -1,1 +1,1 @@
-CADASTRO V40 — Tela inicial clara conforme referência: título leve, cartões com divisória e sombra, descrição discreta e botões verdes/cinza.
+CADASTRO V41 — alterações solicitadas; requer executar backend/v41-availability-cover.sql antes de publicar.

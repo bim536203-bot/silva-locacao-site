@@ -1,0 +1,18 @@
+CADASTRO — VERSÃO 41
+Base: CADASTRO_VERSAO_40(1).zip
+
+ANTES DE PUBLICAR:
+1. No projeto Supabase correspondente SOMENTE ao site Cadastro, executar backend/v41-availability-cover.sql no SQL Editor. O script adiciona o estado disabled e o índice da foto de capa. Não execute no projeto de outros aplicativos.
+2. Publicar o conteúdo da pasta public no destino atual do site Cadastro. Esta entrega não foi publicada automaticamente.
+3. Testar no celular: os 4 botões de disponibilidade, a escolha da capa, a lista de motos, o cadeado no rodapé e o formulário da CNH.
+
+ALTERAÇÕES:
+- Estados Disponível, Ocultar, Em breve e Indisponível na mesma linha.
+- Indisponível mantém cartão visível com baixa opacidade e sem solicitação; círculo branco preservado.
+- Em breve mantém o comportamento antigo de moto não disponível.
+- Seleção de foto de capa entre as fotos já carregadas.
+- Cadeado ADM movido para depois do catálogo (não flutuante).
+- Campo CNH PDF passa a ser o primeiro do formulário; mensagem explicativa removida; conferência preservada.
+- Quatro ícones do painel ADM renovados, incluindo selo preto retangular sem moto.
+
+NOTA: esta versão contém código atualizado e instruções SQL. O banco remoto não foi modificado por esta entrega.
