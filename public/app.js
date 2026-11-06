@@ -193,7 +193,28 @@ async function solveProof(c){
 }
 function startAdminUpdates(){clearInterval(adminTimer);adminTimer=setInterval(async()=>{if(!session||document.hidden)return;const n=await db.from('website_notifications').select('*').order('created_at',{ascending:false});if(n.error)return;notifications=n.data||[];if(tab==='notifications'&&$('#modal').classList.contains('hidden'))renderNotifs();},15000)}
 async function openDocument(doc,action,appId){if(!doc)return;try{const response=await gateway('document',{document_id:doc.id,action},true);const blob=await response.blob(),url=URL.createObjectURL(blob);if(action==='view'){modal(`<h2>${doc.kind==='cnh'?'CNH':'Foto do rosto'}</h2>${doc.kind==='cnh'?`<iframe sandbox title="CNH" class="docframe" src="${esc(url)}"></iframe>`:`<img class="docpreview" src="${esc(url)}" alt="Foto do rosto">`}<button class="btn secondary" id="back-client">VOLTAR AO CADASTRO</button>`);$('#back-client').onclick=()=>viewApp(appId)}else{const link=document.createElement('a');link.href=url;link.download=doc.kind==='cnh'?'CNH.pdf':'foto-do-rosto.'+(blob.type==='image/png'?'png':'jpg');link.click();toast('Download solicitado.')}setTimeout(()=>URL.revokeObjectURL(url),300000)}catch(e){toast(e.message)}}
-function editClient(a){modal(`<h2>Editar dados do cliente</h2><form id="edit-client-form">${fields.slice(0,8).map(([id,label,type])=>`<div class="field"><label>${label}</label><input name="${id}" type="${type}" value="${esc(id==='birth_date'&&a[id]?a[id].split('-').reverse().join('/'):a[id]||'')}" required></div>`).join('')}<button class="btn primary">SALVAR ALTERAÇÕES</button></form>`);$('#edit-client-form').onsubmit=async e=>{e.preventDefault();let f=e.target,v=Object.fromEntries(fields.slice(0,8).map(([id])=>[id,f[id].value.trim()]));v.cpf=v.cpf.replace(/\D/g,'');v.phone=v.phone.replace(/\D/g,'');v.birth_date=v.birth_date.includes('/')?v.birth_date.split('/').reverse().join('-'):v.birth_date;if(!validCpf(v.cpf)||!/^\d{10,11}$/.test(v.phone)){toast('Confira CPF e telefone.');return}const {error}=await db.from('website_applications').update(v).eq('id',a.id);if(error)toast(error.message);else{close();await loadAdmin();toast('Dados atualizados.')}}}
+function editClient(a){
+ const clientFields=fields.slice(0,8);
+ const relativeFields=fields.slice(8);
+ const relativeSection=n=>`<fieldset class="edit-relative"><legend>${n}º PARENTE</legend>${relativeFields.filter(([id])=>id.startsWith(`relative_${n}_`)).map(([id,label,type])=>fieldHtml(id,label,type,a)).join('')}</fieldset>`;
+ modal(`<h2>Editar dados do cliente</h2><form id="edit-client-form">${clientFields.map(([id,label,type])=>`<div class="field"><label for="edit-${id}">${label}</label><input id="edit-${id}" name="${id}" type="${type}" value="${esc(id==='birth_date'&&a[id]?a[id].split('-').reverse().join('/'):a[id]||'')}" required></div>`).join('')}<h3>Contato de dois parentes próximos</h3>${relativeSection(1)}${relativeSection(2)}<button class="btn primary" type="submit">SALVAR ALTERAÇÕES</button></form>`);
+ $('#edit-client-form').onsubmit=async e=>{
+  e.preventDefault();const f=e.target;if(f.dataset.saving==='true')return;
+  const v=Object.fromEntries(fields.map(([id])=>[id,f.elements[id].value.trim()]));
+  v.cpf=v.cpf.replace(/\D/g,'');
+  for(const key of ['phone','relative_1_phone','relative_2_phone'])v[key]=v[key].replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
+  v.birth_date=v.birth_date.includes('/')?v.birth_date.split('/').reverse().join('-'):v.birth_date;
+  if(!validCpf(v.cpf)||!/^\d{10,11}$/.test(v.phone)){toast('Confira CPF e telefone.');return}
+  for(const n of [1,2]){
+   if(v[`relative_${n}_name`].length<2){toast(`Informe o nome do ${n}º parente.`);return}
+   if(!/^\d{10,11}$/.test(v[`relative_${n}_phone`])){toast(`Informe um telefone com DDD válido para o ${n}º parente.`);return}
+   if(!relations.includes(v[`relative_${n}_relation`])){toast(`Selecione o grau de parentesco do ${n}º parente.`);return}
+  }
+  try{const {checkContacts}=await import('./validation.js');checkContacts(v)}catch(error){toast(error.message);return}
+  const button=f.querySelector('button[type="submit"]');f.dataset.saving='true';button.disabled=true;
+  try{const {data,error}=await db.from('website_applications').update(v).eq('id',a.id).select('id').single();if(error)throw error;if(!data)throw Error('Não foi possível salvar as alterações.');close();await loadAdmin();await viewApp(a.id);toast('Dados atualizados.')}catch(error){toast(error.message||'Não foi possível salvar as alterações.')}finally{delete f.dataset.saving;button.disabled=false;}
+ };
+}
 async function restoreClient(a){if(Date.now()-new Date(a.deleted_at).getTime()>=7*86400000){toast('Prazo de recuperação encerrado. Registro retido para revisão legal.');return}const {error}=await db.from('website_applications').update({deleted_at:null}).eq('id',a.id);if(error)toast(error.message);else{close();await loadAdmin()}}
 function bikeThumb(b){return b.photos?.length?`<img src="${esc(photoUrl(b.photos[Math.min(Math.max(0,Number(b.cover_photo_index)||0),b.photos.length-1)]))}" alt="${esc(b.model)}">`:'🏍'}
 function renderBikeAdmin(){$('#bike-admin-list').innerHTML=bikes.map(b=>`<div class="admin-bike-card"><div class="itemhead"><div class="admin-bike-info"><div class="admin-bike-thumb">${bikeThumb(b)}</div><div><b>${esc(motorcycleLabel(b))}</b><p>${bikeState(b)==='hidden'?'Oculta':bikeState(b)==='available'?'Disponível':bikeState(b)==='unavailable'?'Em breve':'Indisponível'} • ${money(b.weekly_price)}/semana</p></div></div><div class="admin-bike-actions"><button class="mini" data-bike="${b.id}">EDITAR</button></div></div></div>`).join('')||'Nenhuma moto cadastrada.';document.querySelectorAll('[data-bike]').forEach(x=>x.onclick=()=>editBike(bikes.find(b=>b.id===x.dataset.bike)))}

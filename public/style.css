@@ -204,3 +204,5 @@ body:has(#public:not(.hidden)) .hamburger{font-size:30px;padding:6px 2px;line-he
 .admin-home-card:has(.adm-art-seal) .admin-home-icon{height:150px;min-height:150px}
 .admin-home-card:has(.adm-art-seal) .adm-art-seal{height:135px}
 @media(max-width:540px){.admin-home-icon{height:100px;min-height:100px}.adm-art{height:96px}.adm-art-moto{height:92px}.adm-art-bell{height:96px}.admin-home-card:has(.adm-art-seal) .admin-home-icon{height:128px;min-height:128px}.admin-home-card:has(.adm-art-seal) .adm-art-seal{height:118px}}
+
+.edit-relative{border:1px solid #ddd;border-radius:12px;padding:10px 16px;margin:20px 0;min-width:0}.edit-relative legend{font-weight:800;padding:0 7px}
