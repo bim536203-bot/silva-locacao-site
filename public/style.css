@@ -195,3 +195,12 @@ body:has(#public:not(.hidden)) .hamburger{font-size:30px;padding:6px 2px;line-he
 .adm-bell{font-size:76px;filter:drop-shadow(0 3px 3px #0002)}
 .admin-home-card strong{font-size:clamp(23px,5vw,31px)}
 @media(max-width:540px){.admin-home{gap:17px}.admin-home-card{min-height:190px;padding:23px 12px}}
+
+/* V42: ícones extraídos da referência visual aprovada, sem emojis substitutos. */
+.admin-home-icon{height:120px;min-height:120px;width:100%;display:flex;align-items:center;justify-content:center;font-size:initial}
+.adm-art{display:block;object-fit:contain;max-width:90%;height:112px;width:auto;filter:none}
+.adm-art-moto{height:105px}.adm-art-seal{height:104px;max-width:88%}.adm-art-bell{height:112px}
+.admin-home-card{justify-content:center;gap:12px}
+.admin-home-card:has(.adm-art-seal) .admin-home-icon{height:150px;min-height:150px}
+.admin-home-card:has(.adm-art-seal) .adm-art-seal{height:135px}
+@media(max-width:540px){.admin-home-icon{height:100px;min-height:100px}.adm-art{height:96px}.adm-art-moto{height:92px}.adm-art-bell{height:96px}.admin-home-card:has(.adm-art-seal) .admin-home-icon{height:128px;min-height:128px}.admin-home-card:has(.adm-art-seal) .adm-art-seal{height:118px}}

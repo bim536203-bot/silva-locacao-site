@@ -1,1 +1,1 @@
-CADASTRO V41 — alterações solicitadas; requer executar backend/v41-availability-cover.sql antes de publicar.
+CADASTRO V42 — ordenação do catálogo: Disponível > Em breve > Indisponível. Ícones ADM conforme referência aprovada, com SELO apenas dentro da plaquinha. Requer migração SQL da V41 se ainda não aplicada.
