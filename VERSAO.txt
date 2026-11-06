@@ -1,1 +1,1 @@
-CADASTRO V43 — ADM pode editar nome, telefone e grau de parentesco dos dois parentes do cadastro.
+CADASTRO V44 — Botão Disponível em Breve abre e permite enviar o cadastro da moto escolhida.
