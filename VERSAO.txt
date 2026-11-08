@@ -1,1 +1,1 @@
-CADASTRO V44 — Botão Disponível em Breve abre e permite enviar o cadastro da moto escolhida.
+CADASTRO V45 — Galeria com deslizamento e foto em tela cheia; zoom isolado à foto ampliada.
