@@ -1,1 +1,1 @@
-CADASTRO V46 — Assinatura do locador extraída do Word de cada moto; zoom nas prévias de PDF e no editor da assinatura.
+CADASTRO V47 — Galeria com animação de deslizamento acompanhando o dedo; fotos da tela inicial somente para exibição.
