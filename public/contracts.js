@@ -1,3 +1,4 @@
+import {ownerSignatureFromWord} from './word-owner.js?v=46';
 /* Private, admin-only document workflow. Customer documents never leave this browser and Supabase. */
 const BUCKET='website-motorcycle-documents';
 const DOCX='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -46,7 +47,7 @@ export function vehicleFromWord(xml,parser=DOMParser){
  for(const k of ['PLACA','RENAVAM','CHASSI','COR'])if(!out[k])throw new Error('Complete '+k+' no modelo Word da moto.');return out;
 }
 const cleanText=s=>String(s??'').normalize('NFC').replace(/[\r\n\t]+/g,' ').replace(/\s+/g,' ').trim();
-export async function fillFixedLayout(pdf,{bike,application:a,details,vehicle,faceBytes,sealBytes,bikeBytes}){
+export async function fillFixedLayout(pdf,{bike,application:a,details,vehicle,faceBytes,sealBytes,bikeBytes,ownerBytes}){
  const font=await pdf.embedFont(PDFLib.StandardFonts.Helvetica),bold=await pdf.embedFont(PDFLib.StandardFonts.HelveticaBold),serif=await pdf.embedFont(PDFLib.StandardFonts.TimesRoman);
  if(pdf.getPageCount()!==4)throw new Error('Base do contrato inválida.');
  const pages=pdf.getPages();for(const p of pages)p.pushOperators(PDFLib.beginText(),PDFLib.setCharacterSpacing(0),PDFLib.setWordSpacing(0),PDFLib.setCharacterSqueeze(100),PDFLib.setTextRise(0),PDFLib.endText());
@@ -93,6 +94,11 @@ export async function fillFixedLayout(pdf,{bike,application:a,details,vehicle,fa
   y+=height;rule(left,y,right,y);
  });
  await picture(p,faceBytes,[379.89,425.4,148.8,198.4]);
+ // Erase the owner signature baked into the shared base; use this bike's Word only.
+ pages[3].drawRectangle({x:44,y:pages[3].getHeight()-730,width:300,height:40,color:PDFLib.rgb(1,1,1)});
+ line(pages[3],'Assinatura do Locador da Moto:',46.68,709.42,140,9,font);
+ if(ownerBytes)await picture(pages[3],ownerBytes,[188,695,145,24]);
+ pages[3].drawLine({start:{x:186,y:pages[3].getHeight()-720},end:{x:333,y:pages[3].getHeight()-720},thickness:.5,color:PDFLib.rgb(0,0,0)});
  // Keep the signature line at the approved location; never carry a prior tenant's signature.
  line(pages[3],'Assinatura do locatário '+a.full_name+':',37.7,581.8,190,8,serif);
  pages[3].drawLine({start:{x:230,y:pages[3].getHeight()-591},end:{x:407,y:pages[3].getHeight()-591},thickness:.5,color:PDFLib.rgb(0,0,0)});
@@ -110,13 +116,13 @@ export async function generateContract({db,bike,application,docs,gateway,details
  await libs();
  const [template,seal,layout]=await Promise.all([download(db,bike.contract_template_path),download(db,details.sealPath),db.rpc('website_contract_layout')]);
  if(layout.error||!layout.data)throw new Error('Modelo de contrato indisponível. Entre novamente na ADM.');
- const zip=await JSZip.loadAsync(template);const vehicle=vehicleFromWord(await zip.file('word/document.xml').async('string'));
+ const zip=await JSZip.loadAsync(template);const vehicle=vehicleFromWord(await zip.file('word/document.xml').async('string'));const ownerBytes=await ownerSignatureFromWord(zip);
  if(String(vehicle.ANO)!==String(bike.year))throw new Error('O ano no Word é diferente do ano desta moto. Atualize o modelo Word antes de gerar.');
  const photo=await db.storage.from('website-motorcycle-photos').download(bike.photos[0]);if(photo.error||!photo.data)throw new Error('Foto da moto indisponível.');
  const face=docs.find(x=>x.kind==='face'),cnh=docs.find(x=>x.kind==='cnh');if(!face||!cnh)throw new Error('Falta a foto ou a CNH do cliente.');
  const [faceResponse,cnhResponse]=await Promise.all([gateway('document',{document_id:face.id,action:'view'},true),gateway('document',{document_id:cnh.id,action:'view'},true)]);
  const pdf=await PDFLib.PDFDocument.load(Uint8Array.from(atob(layout.data),c=>c.charCodeAt(0)));
- await fillFixedLayout(pdf,{bike,application,details,vehicle,faceBytes:new Uint8Array(await faceResponse.arrayBuffer()),sealBytes:new Uint8Array(await seal.arrayBuffer()),bikeBytes:new Uint8Array(await photo.data.arrayBuffer())});
+ await fillFixedLayout(pdf,{bike,application,details,vehicle,faceBytes:new Uint8Array(await faceResponse.arrayBuffer()),sealBytes:new Uint8Array(await seal.arrayBuffer()),ownerBytes,bikeBytes:new Uint8Array(await photo.data.arrayBuffer())});
  if(signature){const bytes=new Uint8Array(await signature.arrayBuffer());if(bytes.length>8*1024*1024)throw new Error('Imagem da assinatura muito grande.');const image=await pdf.embedPng(bytes),page=pdf.getPages()[3],fit=image.scaleToFit(174,48);page.drawImage(image,{x:230+(174-fit.width)/2,y:page.getHeight()-591-8,width:fit.width,height:fit.height});}
  await appendPdfOrImage(pdf,await cnhResponse.blob());if(bike.vehicle_document_path)await appendPdfOrImage(pdf,await download(db,bike.vehicle_document_path));
  return new Blob([await pdf.save()],{type:'application/pdf'});

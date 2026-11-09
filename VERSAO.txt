@@ -1,1 +1,1 @@
-CADASTRO V45 — Galeria com deslizamento e foto em tela cheia; zoom isolado à foto ampliada.
+CADASTRO V46 — Assinatura do locador extraída do Word de cada moto; zoom nas prévias de PDF e no editor da assinatura.

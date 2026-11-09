@@ -214,3 +214,6 @@ html,body{touch-action:pan-x pan-y}#gallery-img{touch-action:pan-y;cursor:zoom-i
 .photo-viewer{position:fixed;inset:0;width:100%;height:100dvh;background:#000;z-index:10000;touch-action:none;overscroll-behavior:none;overflow:hidden;display:flex;align-items:center;justify-content:center;user-select:none}
 .fullscreen-bike-photo{width:100%;height:100%;object-fit:contain;transform-origin:center;pointer-events:auto;touch-action:none;-webkit-user-drag:none}
 .photo-viewer-back{position:absolute;left:max(16px,env(safe-area-inset-left));top:max(16px,env(safe-area-inset-top));border:1px solid #ddd;border-radius:15px;background:#fff;color:#111;font-size:18px;font-weight:700;padding:12px 17px;box-shadow:0 3px 10px #0006;z-index:1;touch-action:manipulation}
+
+/* Document zoom is local to the preview, independent of page zoom. */
+#contract-preview .pdf-pages,.signature-page-scroll{touch-action:pan-x pan-y;overscroll-behavior:contain;text-align:left}#contract-preview .pdf-pages canvas{margin-left:0}.signature-page{flex-shrink:0;max-width:none}
